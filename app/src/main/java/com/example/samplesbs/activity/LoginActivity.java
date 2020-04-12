@@ -2,6 +2,7 @@ package com.example.samplesbs.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.ContentLoadingProgressBar;
 
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -29,6 +30,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -56,6 +58,7 @@ public class LoginActivity extends AppCompatActivity {
     private GoogleSignInClient googleSignInClient;
     private GoogleSignInOptions gso;
     private CallbackManager callbackManager;
+    private ContentLoadingProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +80,7 @@ public class LoginActivity extends AppCompatActivity {
         loginBtn = findViewById(R.id.loginBtn);
         gotoSuBtn = findViewById(R.id.gotoSuBtn);
         resetTextView = findViewById(R.id.password_reset_text);
+        progressBar = findViewById(R.id.progress_bar);
 
         google_sign_in_btn.setOnClickListener(onClickListener);
         facebook_sign_in_btn.setOnClickListener(onClickListener);
@@ -90,6 +94,7 @@ public class LoginActivity extends AppCompatActivity {
         public void onClick(View v) {
             switch (v.getId()){
                 case R.id.loginBtn:
+                    progressBar.show();
                     login();
                     break;
                 case R.id.gotoSuBtn:
@@ -99,9 +104,11 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(PasswordResetActivity.class);
                     break;
                 case R.id.google_sign_in_btn:
+                    progressBar.show();
                     googleLogin();
                     break;
                 case R.id.facebook_sign_in_btn:
+                    progressBar.show();
                     facebookLogin();
                     break;
             }
@@ -118,7 +125,7 @@ public class LoginActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 uid=task.getResult().getUser().getUid();
-                                registerPushToken();
+                                registerPushTokenAndStartActivity();
                             } else {
                                 Toast.makeText(getApplicationContext(), getString(R.string.login_failed),
                                         Toast.LENGTH_SHORT).show();
@@ -161,7 +168,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             uid=mAuth.getCurrentUser().getUid();
-                            registerPushToken();
+                            registerPushTokenAndStartActivity();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -212,7 +219,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             uid=mAuth.getCurrentUser().getUid();
-                            registerPushToken();
+                            registerPushTokenAndStartActivity();
                         } else {
 
                             // If sign in fails, display a message to the user.
@@ -231,7 +238,7 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
-    private void registerPushToken() {
+    private void registerPushTokenAndStartActivity() {
         FirebaseInstanceId.getInstance().getInstanceId()
                 .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                     @Override
@@ -242,8 +249,12 @@ public class LoginActivity extends AppCompatActivity {
                         token = task.getResult().getToken();
                         Map<String, Object> map = new HashMap<>();
                         map.put("token", token);
-                        FirebaseFirestore.getInstance().collection("tokens").document(uid).set(map);
-                        startActivity(MainActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        intent.putExtra("uid",uid);
+                        intent.putExtra("token",token);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
                     }
                 });
     }

@@ -1,24 +1,21 @@
 package com.example.samplesbs.data_model;
 
 public class LocationData {
-    private int id;
     private double latitude;
     private double longitude;
+    private double angle;
 
     public LocationData(){};
 
-    public LocationData(int id, double latitude, double longitude) {
-        this.id = id;
+    public LocationData(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+        this.angle = 0.0;
     }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    public LocationData( double latitude, double longitude, double angle) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.angle = angle;
     }
 
     public double getLatitude() {

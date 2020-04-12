@@ -8,6 +8,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.samplesbs.R;
+import com.example.samplesbs.data_model.LocationData;
 import com.example.samplesbs.data_model.UserData;
 import com.example.samplesbs.data_model.UserSituationData;
 import com.example.samplesbs.php.InsertLocationData;
@@ -38,13 +43,14 @@ import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 
-public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener {
+public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, SensorEventListener {
     public static Context context;
     private FirebaseFirestore firestore;
-    private Location prevLocation, latestLocation;
     private TextView addressTextView;
     private TextView distanceTextView;
     private TextView timeTextView;
@@ -72,8 +78,15 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private String userID = null;
     private String token = null;
 
+    private Queue<LocationData> queue = new LinkedList<LocationData>();
+    private Location prevLocation, latestLocation;
     private double accidentLatitude = 0.0;
     private double accidentLongitde = 0.0;
+
+    //acc sensor
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private float[] gravity= new float[3];
 
 
     @Override
@@ -82,18 +95,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         setContentView(R.layout.activity_main); //daummap 2번 로딩시 에러 나기 때문
         context = this;
         firestore = FirebaseFirestore.getInstance();
-        userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        firestore.collection("tokens").document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                token=documentSnapshot.get("token").toString();
-            }
-        });
+        userID = getIntent().getStringExtra("uid");
+        token = getIntent().getStringExtra("token");
+
 
         if (!hasPermissions(this, permissions))
             ActivityCompat.requestPermissions(this, permissions, PERMISSION_CODE);
         else {
             init();
+            sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+            assert sensorManager != null;
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
@@ -119,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             start = System.currentTimeMillis();
             latestLocation.setLatitude(mapPointGeo.latitude);
             latestLocation.setLongitude(mapPointGeo.longitude);
+            queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude));
             if (token != null)
                 insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
             isFirst = false;
@@ -138,104 +152,56 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             speedTextView.setText("속도:" + (distance / time) + "(m/s)");
             if (token != null && (prevLocation.getLongitude() != latestLocation.getLongitude() || prevLocation.getLatitude() != latestLocation.getLatitude())) //위도 경도가 하나라도 달라야됨
                 insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
-            //추후엔 각 차량, 기기마다 구별히 가능한 적절한 토큰 컬럼을 추가하는게 좋을듯.
 
-            /** To-do
-             if(accelationValue > 6*g){
-             php 전송 코드
-             }
-             */
-            if (time > 2 && token!=null) {
-                // if (accidentLatitude != latestLocation.getLatitude() || accidentLongitde != latestLocation.getLongitude()) { //위도 경도가 하나라도 달라야됨
-                accidentLatitude = latestLocation.getLatitude();
-                accidentLongitde = latestLocation.getLongitude();
-                NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
-                notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(accidentLatitude), String.valueOf(accidentLongitde), "accident", token);
-                Log.d("token:", token);
-                //   }
+            if(queue.size()<10)
+                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude));
+            else{
+                queue.poll();
+                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude));
             }
-
 
             userSituationData.setDistance(distance);
             userSituationData.setTime(time);
             userSituationData.setSpeed(distance / time);
             firestore.collection("situations").document(userID).set(userSituationData);
         }
-        mapView.setMapCenterPoint(mapPoint, true);
+
 
         MapReverseGeoCoder mapReverseGeoCoder = new MapReverseGeoCoder(getString(R.string.kakao_app_key), mapPoint, this, MainActivity.this);
         mapReverseGeoCoder.startFindingAddress();
 
+        mapView.setMapCenterPoint(mapPoint, true);
         mapView.setCurrentLocationRadius(250); //m단위  250이란 값이 실제 지도에서 1km정도에 해당됨
         mapView.setCurrentLocationRadiusFillColor(android.graphics.Color.argb(10, 255, 0, 0));
         mapView.setCurrentLocationRadiusStrokeColor(android.graphics.Color.argb(100, 255, 0, 0));
     }
 
-
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_CODE: {
-                if (grantResults.length > 0) {
-                    for (int i = 0; i < permissions.length; i++) {
-                        if (permissions[i].equals(this.permissions[i])) {
-                            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                                init();
-                            } else {
-                                Toast.makeText(getApplicationContext(), getString(R.string.permission_failed), Toast.LENGTH_SHORT).show();
-                                ActivityCompat.requestPermissions(this, permissions, PERMISSION_CODE);
-                                Log.e("권한", "비허용");
-                            }
-                        }
+    public void onSensorChanged(SensorEvent event) {
+        float alpha = 0.8f;
+        gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0];
+        gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1];
+        gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];  //중력가속도 계산
 
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), getString(R.string.permission_failed), Toast.LENGTH_SHORT).show();
-                    ActivityCompat.requestPermissions(this, permissions, PERMISSION_CODE);
-                    Log.e("권한", "비허용");
-                    finish();
-                }
-                return;
-            }
+        float accX = event.values[0] - gravity[0];
+        float accY = event.values[1] - gravity[1];
+        float accZ = event.values[2] - gravity[2]; // 중력을 뺀 가속도.
+
+        double total = Math.sqrt(Math.pow(accX, 2) + Math.pow(accY, 2) + Math.pow(accZ, 2));
+
+
+        if(total > 6.0 * 9.8 && token!=null && (accidentLongitde!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
+            Log.d("accident","occur");
+            accidentLatitude = latestLocation.getLatitude();
+            accidentLongitde = latestLocation.getLongitude();
+            NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
+            notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(accidentLatitude), String.valueOf(accidentLongitde), "accident", token);
         }
     }
 
-    public boolean hasPermissions(Context context, String... permissions) {
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-
     @Override
-    public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-    }
-
-    @Override
-    public void onCurrentLocationUpdateFailed(MapView mapView) {
-
-    }
-
-    @Override
-    public void onCurrentLocationUpdateCancelled(MapView mapView) {
-
-    }
-
-    @Override
-    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String s) {
-        mapReverseGeoCoder.toString();
-        onFinishReverseGeoCoding(s);
-    }
-
-    @Override
-    public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder) {
-        onFinishReverseGeoCoding("Fail");
     }
 
     public void showMarker(MapPoint mapPoint) {
@@ -288,6 +254,60 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     public void setLocationServiceStatus(String text) {
         locationServiceStatus.setText(text);
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_CODE: {
+                if (grantResults.length > 0) {
+                    for (int i = 0; i < permissions.length; i++) {
+                        if (permissions[i].equals(this.permissions[i])) {
+                            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                                init();
+                            } else {
+                                Toast.makeText(getApplicationContext(), getString(R.string.permission_failed), Toast.LENGTH_SHORT).show();
+                                ActivityCompat.requestPermissions(this, permissions, PERMISSION_CODE);
+                                Log.e("권한", "비허용");
+                            }
+                        }
 
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), getString(R.string.permission_failed), Toast.LENGTH_SHORT).show();
+                    ActivityCompat.requestPermissions(this, permissions, PERMISSION_CODE);
+                    Log.e("권한", "비허용");
+                    finish();
+                }
+                return;
+            }
+        }
+    }
+    public boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    @Override
+    public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v) {}
 
+    @Override
+    public void onCurrentLocationUpdateFailed(MapView mapView) {}
+
+    @Override
+    public void onCurrentLocationUpdateCancelled(MapView mapView) {}
+
+    @Override
+    public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String s) {
+        mapReverseGeoCoder.toString();
+        onFinishReverseGeoCoding(s);
+    }
+
+    @Override
+    public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder) {
+        onFinishReverseGeoCoding("Fail");
+    }
 }

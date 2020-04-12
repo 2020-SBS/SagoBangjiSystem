@@ -25,7 +25,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // [START receive_message]
     @Override
     public void onMessageReceived(final RemoteMessage remoteMessage) {
-
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
@@ -41,7 +40,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 @Override
                 public void run() {
                     StyleableToast.makeText(getApplicationContext(), "근방에 급감속 발생", Toast.LENGTH_LONG, R.style.mytoast).show();
-                    //Toast.makeText(getApplicationContext(),"주의. 전방에 급감속 발생",Toast.LENGTH_LONG).show();
                 }
             }, 0);
             ((MainActivity)MainActivity.context).showMarker(MapPoint.mapPointWithGeoCoord(latitude,longitude));
