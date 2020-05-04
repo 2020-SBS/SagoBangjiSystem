@@ -2,12 +2,17 @@ package com.example.samplesbs.php;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.samplesbs.data_model.LocationData;
+import com.google.gson.JsonObject;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,18 +21,26 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class NotifyAccident extends AsyncTask<String, String, String> {
     public static final String TAG = "NotifyAccident";
-    ProgressDialog progressDialog;
-    String errorString = null;
-    Context mContxt;
-    String mJsonString=null;
+    private String errorString = null;
+    private Context mContext;
+    private String mJsonString = null;
+    private Queue<LocationData> queue;
 
-    public NotifyAccident(){}
-    public NotifyAccident(Context context){mContxt=context;}
+    public NotifyAccident() {
+    }
+
+    public NotifyAccident(Context context) {
+        mContext = context;
+    }
 
     @Override
     protected void onPreExecute() {
@@ -40,30 +53,29 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
-        if (result == null){
-            Log.e("error",errorString);
-        }
-        else {
+        if (result == null) {
+            Log.e("error", errorString);
+        } else {
             mJsonString = result;
+            Log.e("result",result);
             showResult();
         }
     }
+
     @Override
     protected String doInBackground(String... params) {
-        String latitude = (String)params[1];
-        String longitude = (String)params[2];
-        String accident = (String)params[3];
-        String token = (String)params[4];
+        String latitude = (String) params[1];
+        String longitude = (String) params[2];
+        String accident = (String) params[3];
+        String token = (String) params[4];
 
-        String serverURL = (String)params[0];
+        String serverURL = (String) params[0];
 
         // 여기에 적어준 이름을 나중에 PHP에서 사용하여 값을 얻게 됩니다
         String postParameters = "latitude=" + latitude + "&longitude=" + longitude+"&accident="+accident+"&token="+token;
-
-
+        postParameters=setPostParameter(postParameters);
 
         try {
-            //연결 url 설정
             URL url = new URL(serverURL);
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
 
@@ -74,8 +86,8 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
 
             httpURLConnection.setRequestMethod("POST");
             httpURLConnection.setDoInput(true);
-            httpURLConnection.connect();
 
+            httpURLConnection.connect();
 
             OutputStream outputStream = httpURLConnection.getOutputStream();
             outputStream.write(postParameters.getBytes("UTF-8"));//전송할 데이터가 저장된 변수를 이곳에 입력합니다. 인코딩을 고려해줘야 합니다.
@@ -84,19 +96,17 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
             outputStream.close();
 
 
-
             //3. 응답을 읽는다.
             int responseStatusCode = httpURLConnection.getResponseCode();
             Log.d(TAG, "POST response code - " + responseStatusCode);
 
             InputStream inputStream;
-            if(responseStatusCode == HttpURLConnection.HTTP_OK) {
+            if (responseStatusCode == HttpURLConnection.HTTP_OK) {
                 //정상적인 응답 데이터
                 inputStream = httpURLConnection.getInputStream();
-            }
-            else{ //에러 발생
+            } else { //에러 발생
                 inputStream = httpURLConnection.getErrorStream();
-                Log.e("error",inputStream.toString());
+                Log.e("error", inputStream.toString());
             }
 
 
@@ -107,7 +117,7 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
             StringBuilder sb = new StringBuilder();
             String line = null;
 
-            while((line = bufferedReader.readLine()) != null){
+            while ((line = bufferedReader.readLine()) != null) {
                 sb.append(line);
             }
 
@@ -123,12 +133,12 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
         }
     }
 
-    private void showResult(){
-        String TAG_JSON="location";
+    private void showResult() {
+        String TAG_JSON = "location";
         String TAG_ID = "id";
         String TAG_LATITUDE = "latitude";
-        String TAG_LONGITUDE ="longitude";
-        String TAG_TOKEN ="token";
+        String TAG_LONGITUDE = "longitude";
+        String TAG_TOKEN = "token";
 
 
         try {
@@ -137,23 +147,36 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
             JSONObject jsonObject = new JSONObject(mJsonString);
             JSONArray jsonArray = jsonObject.getJSONArray(TAG_JSON);
 
-            for(int i=0;i<jsonArray.length();i++){
+            for (int i = 0; i < jsonArray.length(); i++) {
 
                 JSONObject item = jsonArray.getJSONObject(i);
                 String id = item.getString(TAG_ID);
                 String latitude = item.getString(TAG_LATITUDE);
                 String longitude = item.getString(TAG_LONGITUDE);
                 String token = item.getString(TAG_TOKEN);
-                Log.d("location","("+latitude+","+longitude+")");
-                Log.d("token",token);
+                Log.d("location", "(" + latitude + "," + longitude + ")");
+                Log.d("token", token);
 
             }
 
         } catch (JSONException e) {
-            if(mJsonString.trim().equals("empty data set"))
-                Log.d(TAG,e.getMessage());
+            if (mJsonString.trim().equals("empty data set"))
+                Log.d(TAG, e.getMessage());
         }
 
     }
 
+    public void setQueue(Queue<LocationData> queue) {
+        this.queue = queue;
+    }
+
+    private String setPostParameter(String parameters) {
+        String temp = parameters;
+        temp += "&size=" + queue.size();
+        for (int i = 0; i < queue.size(); i++) {
+            LocationData location = queue.poll();
+            temp += "&latitude" + i + "=" + location.getLatitude() + "&longitude" + i + "=" + location.getLongitude() + "&angle" + i + "=" + location.getAngle();
+        }
+        return temp;
+    }
 }

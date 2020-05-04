@@ -1,17 +1,15 @@
 package com.example.samplesbs.messaging;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.example.samplesbs.R;
+import android.util.Log;
 import com.example.samplesbs.activity.MainActivity;
+import com.example.samplesbs.data_model.LocationData;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.muddzdev.styleabletoast.StyleableToast;
-
 import net.daum.mf.map.api.MapPoint;
+import org.json.JSONArray;
+import org.json.JSONException;
+import java.util.ArrayList;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -32,25 +30,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            //final String message = remoteMessage.getData().get("message");
             final double latitude = Double.parseDouble((remoteMessage.getData().get("latitude")));
             final double longitude = Double.parseDouble((remoteMessage.getData().get("longitude")));
-            Handler mHandler = new Handler(Looper.getMainLooper());
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    StyleableToast.makeText(getApplicationContext(), "근방에 급감속 발생", Toast.LENGTH_LONG, R.style.mytoast).show();
+            final String[] latitude_array;
+            final String[] longitude_array;
+            final String[] angle_array;
+            try {
+                JSONArray temp = new JSONArray(((remoteMessage.getData().get("latitude_array"))));
+                latitude_array = temp.join(",").split(",");
+                temp = new JSONArray(((remoteMessage.getData().get("longitude_array"))));
+                longitude_array = temp.join(",").split(",");
+                temp = new JSONArray(((remoteMessage.getData().get("angle_array"))));
+                angle_array = temp.join(",").split(",");
+                ArrayList<LocationData> items = new ArrayList<>();
+                for(int i=0; i<angle_array.length; i++){
+                    double lat = Double.parseDouble(latitude_array[i].substring(latitude_array[i].indexOf('"')+1,latitude_array[i].lastIndexOf('"')));
+                    double lon = Double.parseDouble(longitude_array[i].substring(longitude_array[i].indexOf('"')+1,longitude_array[i].lastIndexOf('"')));
+                    double ang = Double.parseDouble(angle_array[i].substring(angle_array[i].indexOf('"')+1,angle_array[i].lastIndexOf('"')));
+                    items.add(new LocationData(lat,lon,ang));
                 }
-            }, 0);
-            ((MainActivity)MainActivity.context).showMarker(MapPoint.mapPointWithGeoCoord(latitude,longitude));
+                ((MainActivity)MainActivity.context).showMarker(MapPoint.mapPointWithGeoCoord(latitude,longitude), items);
+            }catch (JSONException e){e.printStackTrace();}
         }
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
         }
-
-        // Also if you intend on generating your own notifications as a result of a received FCM
-        // message, here is where that should be initiated. See sendNotification method below.
     }
 }

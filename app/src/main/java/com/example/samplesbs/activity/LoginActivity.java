@@ -129,6 +129,7 @@ public class LoginActivity extends AppCompatActivity {
                             } else {
                                 Toast.makeText(getApplicationContext(), getString(R.string.login_failed),
                                         Toast.LENGTH_SHORT).show();
+                                Log.e("login failed",task.getResult().toString());
                             }
 
                             // ...

@@ -47,7 +47,13 @@ public class SplashActivity extends AppCompatActivity {
                 FirebaseFirestore.getInstance().collection("tokens").document(userID).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        token=documentSnapshot.get("token").toString();
+                        try {
+                            token = documentSnapshot.get("token").toString();
+                        }catch (NullPointerException e){
+                            e.printStackTrace();
+                            FirebaseAuth.getInstance().signOut();
+                            startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                        }
                         intent.putExtra("token",token);
                         intent.putExtra("uid",userID);
                         startActivity(intent);

@@ -1,6 +1,5 @@
 package com.example.samplesbs.activity;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -14,6 +13,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,41 +23,26 @@ import android.widget.Toast;
 
 import com.example.samplesbs.R;
 import com.example.samplesbs.data_model.LocationData;
-import com.example.samplesbs.data_model.UserData;
-import com.example.samplesbs.data_model.UserSituationData;
 import com.example.samplesbs.php.InsertLocationData;
 import com.example.samplesbs.php.NotifyAccident;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.muddzdev.styleabletoast.StyleableToast;
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapReverseGeoCoder;
 import net.daum.mf.map.api.MapView;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, SensorEventListener {
     public static Context context;
-    private FirebaseFirestore firestore;
     private TextView addressTextView;
-    private TextView distanceTextView;
-    private TextView timeTextView;
-    private TextView speedTextView;
     private TextView locationServiceStatus;
-    private UserSituationData userSituationData = new UserSituationData();
     private Button logoutBtn;
     public static final int PERMISSION_CODE = 1000;
     private String[] permissions = {
@@ -65,21 +51,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     };
     private MapView mapView;
     private Boolean isFirst = true;
-    private long start, end;
 
-    private static String IP_ADDRESS = "192.168.0.112"; //wifi
-    private static String EXTERNAL_IP_ADDRESS = "117.123.48.170";
-
-    //192.168.0.1
-    //192.168.137.1
-    //117.123.48.170 외부아이피
-    //192.168.0.114 dmz 호스트 주소
+    private static String EXTERNAL_IP_ADDRESS = "133.186.212.78";
 
     private String userID = null;
     private String token = null;
 
     private Queue<LocationData> queue = new LinkedList<LocationData>();
     private Location prevLocation, latestLocation;
+    private float currenttBearing;
+    private float minBearing=360f, maxBearing=0f;
     private double accidentLatitude = 0.0;
     private double accidentLongitde = 0.0;
 
@@ -94,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); //daummap 2번 로딩시 에러 나기 때문
         context = this;
-        firestore = FirebaseFirestore.getInstance();
         userID = getIntent().getStringExtra("uid");
         token = getIntent().getStringExtra("token");
 
@@ -124,12 +104,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
-        float distance;
-        long time;
         MapPoint.GeoCoordinate mapPointGeo = mapPoint.getMapPointGeoCoord();
         InsertLocationData insertLocationData = new InsertLocationData(this);
         if (isFirst) { //첫 업데이트
-            start = System.currentTimeMillis();
             latestLocation.setLatitude(mapPointGeo.latitude);
             latestLocation.setLongitude(mapPointGeo.longitude);
             queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude));
@@ -137,35 +114,28 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
             isFirst = false;
         } else { //이후의 갱신
-            end = System.currentTimeMillis();
-            time = (end - start) / 1000;
-            start = end;
             prevLocation.setLatitude(latestLocation.getLatitude());
             prevLocation.setLongitude(latestLocation.getLongitude());
 
             latestLocation.setLatitude(mapPointGeo.latitude);
             latestLocation.setLongitude(mapPointGeo.longitude);
 
-            distance = latestLocation.distanceTo(prevLocation);
-            distanceTextView.setText("거리:" + distance + "(m)");
-            timeTextView.setText("시간:" + time + "(s)");
-            speedTextView.setText("속도:" + (distance / time) + "(m/s)");
+            currenttBearing = prevLocation.bearingTo(latestLocation);
+            if(currenttBearing<=minBearing)
+                minBearing=currenttBearing;
+            if(currenttBearing>=maxBearing)
+                maxBearing=currenttBearing;
+
             if (token != null && (prevLocation.getLongitude() != latestLocation.getLongitude() || prevLocation.getLatitude() != latestLocation.getLatitude())) //위도 경도가 하나라도 달라야됨
                 insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
 
             if(queue.size()<10)
-                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude));
+                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude,prevLocation.bearingTo(latestLocation)));
             else{
                 queue.poll();
-                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude));
+                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude,prevLocation.bearingTo(latestLocation)));
             }
-
-            userSituationData.setDistance(distance);
-            userSituationData.setTime(time);
-            userSituationData.setSpeed(distance / time);
-            firestore.collection("situations").document(userID).set(userSituationData);
         }
-
 
         MapReverseGeoCoder mapReverseGeoCoder = new MapReverseGeoCoder(getString(R.string.kakao_app_key), mapPoint, this, MainActivity.this);
         mapReverseGeoCoder.startFindingAddress();
@@ -190,11 +160,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         double total = Math.sqrt(Math.pow(accX, 2) + Math.pow(accY, 2) + Math.pow(accZ, 2));
 
 
-        if(total > 6.0 * 9.8 && token!=null && (accidentLongitde!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
+        if(total > 3.0 * 9.8 && token!=null && (accidentLongitde!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
             Log.d("accident","occur");
             accidentLatitude = latestLocation.getLatitude();
             accidentLongitde = latestLocation.getLongitude();
             NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
+            notifyAccident.setQueue(queue);
             notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(accidentLatitude), String.valueOf(accidentLongitde), "accident", token);
         }
     }
@@ -204,17 +175,38 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
-    public void showMarker(MapPoint mapPoint) {
-        MapPOIItem customMarker = new MapPOIItem();
-        customMarker.setItemName("급감속 발생 위치");
-        customMarker.setTag(1);
-        customMarker.setMapPoint(mapPoint);
-        customMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-        customMarker.setCustomImageResourceId(R.drawable.marker); // 마커 이미지.
-        customMarker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
-        customMarker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
-
-        mapView.addPOIItem(customMarker);
+    public void showMarker(MapPoint mapPoint,ArrayList<LocationData> items) {
+        for(int i=0; i<items.size(); i++){
+            Location subCircle = new Location(String.valueOf(i));
+            subCircle.setLongitude(items.get(i).getLongitude());
+            subCircle.setLatitude(items.get(i).getLatitude());
+            double distance = latestLocation.distanceTo(subCircle);
+            if(distance<135.0 &&(currenttBearing>=minBearing && currenttBearing<=maxBearing)){
+                MapPOIItem customMarker = new MapPOIItem();
+                customMarker.setItemName("급감속 발생 위치");
+                customMarker.setTag(1);
+                customMarker.setMapPoint(mapPoint);
+                customMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
+                customMarker.setCustomImageResourceId(R.drawable.marker); // 마커 이미지.
+                customMarker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
+                customMarker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                Handler mHandler = new Handler(Looper.getMainLooper());
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        StyleableToast.makeText(getApplicationContext(), "근방에 급감속 발생", Toast.LENGTH_LONG, R.style.mytoast).show();
+                    }
+                }, 0);
+                mapView.addPOIItem(customMarker);
+                //void fitMapViewAreaToShowMapPoints(MapPoint[]) 지정한 지도 좌표들이 모두 화면에 나타나도록 지도화면 중심과 확대/축소 레벨을 자동조절한다.
+                break;
+            }else{
+                Log.e("latestLocation",  latestLocation.getLatitude()+","+latestLocation.getLongitude()+"");
+                Log.e("subcircle",  subCircle.getLatitude()+","+subCircle.getLongitude()+"");
+                Log.e("distance",  latestLocation.distanceTo(subCircle)+"");
+                continue;
+            }
+        }
     }
 
     private void onFinishReverseGeoCoding(String result) {
@@ -228,9 +220,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mapView = findViewById(R.id.map_view);
         addressTextView = findViewById(R.id.address);
-        distanceTextView = findViewById(R.id.distance);
-        timeTextView = findViewById(R.id.time);
-        speedTextView = findViewById(R.id.speed);
         logoutBtn = findViewById(R.id.logoutBtn);
         locationServiceStatus = findViewById(R.id.locationServiceStatus);
 

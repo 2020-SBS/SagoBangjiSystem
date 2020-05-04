@@ -1,5 +1,7 @@
 package com.example.samplesbs.data_model;
 
+import android.location.Location;
+
 public class LocationData {
     private double latitude;
     private double longitude;
@@ -32,5 +34,13 @@ public class LocationData {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public double getAngle() {
+        return angle;
+    }
+
+    public void setAngle(double angle) {
+        this.angle = angle;
     }
 }
