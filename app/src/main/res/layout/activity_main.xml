@@ -1,50 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--네비게이터를 위하여 코드를 수정해봤음-->
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id ="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:fitsSystemWindows="true"
+    >
+    <!--위에 이 내용을 적어야 하는지 아닌지 몰라 주석으로...
+    android:fitsSystemWindows="true"-->
 
-
-    <net.daum.mf.map.api.MapView
-        android:id="@+id/map_view"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="5dp">
-        <Button
-            android:text="로그아웃"
-            android:fontFamily="@font/basic_font"
-            android:id="@+id/logoutBtn"
+        android:orientation="vertical">
+
+
+        <net.daum.mf.map.api.MapView
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-    <FrameLayout
-        android:layout_marginTop="5dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
-        <TextView
-            android:id="@+id/address"
-            android:text="주소"
-            android:fontFamily="@font/basic_font"
-            android:textSize="12dp"
-            android:layout_gravity="center"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="5dp">
+            <Button
+                android:text="로그아웃"
+                android:fontFamily="@font/basic_font"
+                android:id="@+id/logoutBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:id="@+id/locationServiceStatus"
-            android:textSize="8dp"
-            android:text="위치 정보 작동 중"
-            android:layout_gravity="right|center_vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="start|bottom"
+            android:layout_margin="5dp">
+            <Button
+                android:text="설정"
+                android:fontFamily="@font/basic_font"
+                android:id="@+id/settingBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <FrameLayout
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <TextView
+                android:id="@+id/address"
+                android:text="주소"
+                android:fontFamily="@font/basic_font"
+                android:textSize="12dp"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/locationServiceStatus"
+                android:textSize="8dp"
+                android:text="위치 정보 작동 중"
+                android:layout_gravity="right|center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </FrameLayout>
+
+
     </FrameLayout>
 
-
-</FrameLayout>
+    <!-- 네비게이션 drawer-->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        app:headerLayout="@layout/main_navi_header"
+        app:menu="@menu/main_navigation_menu"
+        />
+</androidx.drawerlayout.widget.DrawerLayout>

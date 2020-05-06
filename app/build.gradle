@@ -38,4 +38,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.muddzdev:styleabletoast:2.2.3'
     implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+
+    implementation 'com.android.support:design:27.1.1'
 }
