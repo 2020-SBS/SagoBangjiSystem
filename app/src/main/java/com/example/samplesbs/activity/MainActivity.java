@@ -25,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +33,7 @@ import com.example.samplesbs.R;
 import com.example.samplesbs.data_model.LocationData;
 import com.example.samplesbs.php.InsertLocationData;
 import com.example.samplesbs.php.NotifyAccident;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import com.muddzdev.styleabletoast.StyleableToast;
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private TextView addressTextView;
     private TextView locationServiceStatus;
     private Button logoutBtn;
+    private ImageView settingBtn;
     public static final int PERMISSION_CODE = 1000;
     private String[] permissions = {
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -106,8 +109,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     startActivity(LoginActivity.class);
                     break;
                 case R.id.settingBtn:
-                    DrawerLayout drawer =(DrawerLayout)findViewById(R.id.navigationView);
-                    drawer.openDrawer(Gravity.LEFT);
+                    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout) ;
+                    if (!drawer.isDrawerOpen(Gravity.LEFT)) {
+                        drawer.openDrawer(Gravity.LEFT) ;
+                    }else{
+                        drawer.closeDrawer(Gravity.LEFT); ;
+                    }
 
             }
         }
@@ -240,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView = findViewById(R.id.map_view);
         addressTextView = findViewById(R.id.address);
         logoutBtn = findViewById(R.id.logoutBtn);
+        settingBtn = findViewById(R.id.settingBtn);
         locationServiceStatus = findViewById(R.id.locationServiceStatus);
 
         mapView.setZoomLevel(2, true);
@@ -249,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
         mapView.setCurrentLocationEventListener(this);
         logoutBtn.setOnClickListener(onClickListener);
+        settingBtn.setOnClickListener(onClickListener);
     }
 
 

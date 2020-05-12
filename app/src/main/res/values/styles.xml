@@ -21,7 +21,7 @@
         <item name="stStrokeColor">@color/alertColor</item>
         <item name="stIconStart">@drawable/logo</item>
         <item name="stLength">LONG</item> LONG or SHORT
-        <item name="stGravity">top</item> top or center
+        <!--<item name="stGravity">top</item> top or center-->
         <item name="stRadius">3dp</item>
     </style>
 

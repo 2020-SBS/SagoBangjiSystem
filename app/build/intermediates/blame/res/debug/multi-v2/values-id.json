@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-id\\values-id.xml",
+            "outputFile": "C:\\Users\\knmy0\\android_open_src\\test\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-id\\values-id.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\min\\.gradle\\caches\\transforms-2\\files-2.1\\993a6a0d59a519d2fa99cb84c96b0e25\\jetified-facebook-common-4.42.0\\res\\values-id\\values-id.xml",
+                    "source": "C:\\Users\\knmy0\\.gradle\\caches\\transforms-2\\files-2.1\\900b731db69f0badda07430a49e472a9\\jetified-facebook-common-4.42.0\\res\\values-id\\values-id.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",

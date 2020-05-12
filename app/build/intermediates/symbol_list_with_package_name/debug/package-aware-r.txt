@@ -1225,6 +1225,7 @@ drawable ic_mtrl_chip_checked_circle
 drawable ic_mtrl_chip_close_circle
 drawable ic_notifications
 drawable ic_person
+drawable ic_settings_black_24dp
 drawable ic_vibration
 drawable ic_warning_red_24dp
 drawable icon
