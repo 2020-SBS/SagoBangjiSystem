@@ -74,7 +74,9 @@ public class SignUpActivity extends AppCompatActivity {
         String password = ((EditText) findViewById(R.id.pwEditText)).getText().toString();
         String passwordCheck = ((EditText) findViewById(R.id.pwCheckEditText)).getText().toString();
 
-        signUpRegex(email,password);
+        if(!signUpRegex(email,password)){
+            return ;
+        }
 
         if (email.length() > 0 && password.length() > 0 && passwordCheck.length() > 0) {
             if (password.equals(passwordCheck)) {
@@ -106,7 +108,7 @@ public class SignUpActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void signUpRegex(final String email, final String password){
+    private boolean signUpRegex(final String email, final String password){
         //키보드 내리기
         View view = this.getCurrentFocus();
         if (view != null) {
@@ -123,19 +125,20 @@ public class SignUpActivity extends AppCompatActivity {
 
         if(!matcher.matches()) {
             Toast.makeText(getApplicationContext(), "영문, 숫자, 특수문자를 조합하여 비밀번호를 생성해야 합니다.", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
         if(matcher2.find()) {
             Toast.makeText(getApplicationContext(), "비밀번호에 같은 문자를 네개 이상 사용할 수 없습니다.", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
         if(password.contains(email)) {
             Toast.makeText(getApplicationContext(), "비밀번호가 이메일 중 일부를 포함할 수 없습니다.",Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
         if(password.contains(" ")) {
             Toast.makeText(getApplicationContext(), "비밀번호는 공백을 포함할 수 없습니다.", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
+        return true;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.samplesbs.activity;
 
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -26,7 +27,7 @@ import com.example.samplesbs.data_model.LocationData;
 import com.example.samplesbs.php.InsertLocationData;
 import com.example.samplesbs.php.NotifyAccident;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import com.muddzdev.styleabletoast.StyleableToast;
 
 import net.daum.mf.map.api.MapPOIItem;
@@ -227,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.zoomIn(true);
         mapView.zoomOut(true);
         mapView.setHDMapTileEnabled(false); //고해상도 지도 사용 안함
-        mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
+        mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
         mapView.setCurrentLocationEventListener(this);
         logoutBtn.setOnClickListener(onClickListener);
     }
