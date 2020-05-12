@@ -3,6 +3,8 @@ package com.example.samplesbs.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
 import android.content.Context;
@@ -17,6 +19,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -99,9 +105,21 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     FirebaseAuth.getInstance().signOut();
                     startActivity(LoginActivity.class);
                     break;
+                case R.id.settingBtn:
+                    DrawerLayout drawer =(DrawerLayout)findViewById(R.id.navigationView);
+                    drawer.openDrawer(Gravity.LEFT);
+
             }
         }
     };
+    @Override
+    public void onBackPressed(){
+        DrawerLayout drawer =(DrawerLayout)findViewById(R.id.navigationView);
+        if(drawer.isDrawerOpen(Gravity.LEFT))
+            drawer.closeDrawer(Gravity.LEFT);
+        else
+            super.onBackPressed();
+    }
 
     @Override
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
@@ -281,6 +299,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
         return true;
     }
+
+
     @Override
     public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v) {}
 

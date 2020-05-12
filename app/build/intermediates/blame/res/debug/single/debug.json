@@ -1,0 +1,138 @@
+[
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\layout_main_navi_header.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\layout\\main_navi_header.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_main.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_logo.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\logo.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\font_basic_font.ttf.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\font\\basic_font.ttf"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable_rounded_white_view.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable\\rounded_white_view.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_ic_person.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\ic_person.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_login.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\layout\\activity_login.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-anydpi-v26\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\menu_main_navigation_menu.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\menu\\main_navigation_menu.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-mdpi_ic_launcher.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_password_reset.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\layout\\activity_password_reset.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable_marker.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable\\marker.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_ic_notifications.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\ic_notifications.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_rounded_blue_view.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\rounded_blue_view.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable_ic_launcher_background.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable\\ic_launcher_background.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable_ic_warning_red_24dp.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable\\ic_warning_red_24dp.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_icon.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\icon.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\font_basic_font_light.ttf.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\font\\basic_font_light.ttf"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_btn_signin_facebook.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\btn_signin_facebook.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_btn_signin_google.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\btn_signin_google.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_ic_launcher_foreground.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_ic_vibration.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\drawable-v24\\ic_vibration.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_splash.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\layout\\activity_splash.xml"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-hdpi_ic_launcher.png.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\jongsul\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_sign_up.xml.flat",
+        "source": "D:\\jongsul\\SagoBangjiSystem\\app\\src\\main\\res\\layout\\activity_sign_up.xml"
+    }
+]
