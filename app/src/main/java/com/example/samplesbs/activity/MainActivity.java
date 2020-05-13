@@ -4,7 +4,6 @@ package com.example.samplesbs.activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
@@ -16,16 +15,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private NavigationView navigationView;
     private DrawerLayout drawer;
     private ImageView settingBtn;
-    private TextView speed;
+    private TextView speedTextView;
     public static final int PERMISSION_CODE = 1000;
     private String[] permissions = {
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -71,15 +68,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     private Queue<LocationData> queue = new LinkedList<LocationData>();
     private Location prevLocation, latestLocation;
-    private float currenttBearing;
+    private float currentBearing;
     private float minBearing=360f, maxBearing=0f;
     private double accidentLatitude = 0.0;
-    private double accidentLongitde = 0.0;
+    private double accidentLongitude = 0.0;
 
     //acc sensor
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private float[] gravity= new float[3];
+
+    private long start, end;
+    float distance;
+    long time;
 
 
     @Override
@@ -116,20 +117,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         }
     };
-    @Override
-    public void onBackPressed(){
-        DrawerLayout drawer =(DrawerLayout)findViewById(R.id.navigationView);
-        if(drawer.isDrawerOpen(Gravity.LEFT))
-            drawer.closeDrawer(Gravity.LEFT);
-        else
-            super.onBackPressed();
-    }
 
     @Override
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
         MapPoint.GeoCoordinate mapPointGeo = mapPoint.getMapPointGeoCoord();
         InsertLocationData insertLocationData = new InsertLocationData(this);
         if (isFirst) { //첫 업데이트
+            start = System.currentTimeMillis();
             latestLocation.setLatitude(mapPointGeo.latitude);
             latestLocation.setLongitude(mapPointGeo.longitude);
             queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude));
@@ -137,17 +131,22 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
             isFirst = false;
         } else { //이후의 갱신
+            end = System.currentTimeMillis();
+            time = (end - start) / 1000;
+            start = end;
+            speedTextView.setText("속도:" + (distance / time) + "(m/s)");
+
             prevLocation.setLatitude(latestLocation.getLatitude());
             prevLocation.setLongitude(latestLocation.getLongitude());
 
             latestLocation.setLatitude(mapPointGeo.latitude);
             latestLocation.setLongitude(mapPointGeo.longitude);
 
-            currenttBearing = prevLocation.bearingTo(latestLocation);
-            if(currenttBearing<=minBearing)
-                minBearing=currenttBearing;
-            if(currenttBearing>=maxBearing)
-                maxBearing=currenttBearing;
+            currentBearing = prevLocation.bearingTo(latestLocation);
+            if(currentBearing<=minBearing)
+                minBearing=currentBearing;
+            if(currentBearing>=maxBearing)
+                maxBearing=currentBearing;
 
             if (token != null && (prevLocation.getLongitude() != latestLocation.getLongitude() || prevLocation.getLatitude() != latestLocation.getLatitude())) //위도 경도가 하나라도 달라야됨
                 insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
@@ -183,13 +182,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         double total = Math.sqrt(Math.pow(accX, 2) + Math.pow(accY, 2) + Math.pow(accZ, 2));
 
 
-        if(total > 3.0 * 9.8 && token!=null && (accidentLongitde!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
+        if(total > 3.0 * 9.8 && token!=null && (accidentLongitude!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
             Log.d("accident","occur");
             accidentLatitude = latestLocation.getLatitude();
-            accidentLongitde = latestLocation.getLongitude();
+            accidentLongitude = latestLocation.getLongitude();
             NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
             notifyAccident.setQueue(queue);
-            notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(accidentLatitude), String.valueOf(accidentLongitde), "accident", token);
+            notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(accidentLatitude), String.valueOf(accidentLongitude), "accident", token);
         }
     }
 
@@ -204,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             subCircle.setLongitude(items.get(i).getLongitude());
             subCircle.setLatitude(items.get(i).getLatitude());
             double distance = latestLocation.distanceTo(subCircle);
-            if(distance<135.0 &&(currenttBearing>=minBearing && currenttBearing<=maxBearing)){
+            if(distance<135.0 &&(currentBearing>=minBearing && currentBearing<=maxBearing)){
                 MapPOIItem customMarker = new MapPOIItem();
                 customMarker.setItemName("급감속 발생 위치");
                 customMarker.setTag(1);
@@ -222,6 +221,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 }, 0);
                 mapView.addPOIItem(customMarker);
                 //void fitMapViewAreaToShowMapPoints(MapPoint[]) 지정한 지도 좌표들이 모두 화면에 나타나도록 지도화면 중심과 확대/축소 레벨을 자동조절한다.
+                //AlertPlayer.initSounds(getApplicationContext());
+                //AlertPlayer.play(AlertPlayer.ALERT);
+                MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.alert);
+                mediaPlayer.start();
                 break;
             }else{
                 Log.e("latestLocation",  latestLocation.getLatitude()+","+latestLocation.getLongitude()+"");
@@ -241,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mapView = findViewById(R.id.map_view);
         settingBtn = findViewById(R.id.settingBtn);
-        speed = findViewById(R.id.speedTextView);
+        speedTextView = findViewById(R.id.speedTextView);
         locationServiceStatus = findViewById(R.id.locationServiceStatus);
 
         navigationView = findViewById(R.id.navigationView);

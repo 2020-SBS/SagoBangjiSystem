@@ -116,7 +116,7 @@ public class SignUpActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
-        String pwPattern = "^(?=.*\\d)(?=.*[~`!@#$%\\^&*()-])(?=.*[a-z]).{9,12}$";
+        String pwPattern = "^(?=.*\\d)(?=.*[~`!@#$%\\^&*()-])(?=.*[a-z]).{9,15}$";
         Matcher matcher = Pattern.compile(pwPattern).matcher(password);
 
         pwPattern = "(.)\\1\\1\\1";

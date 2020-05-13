@@ -80,6 +80,10 @@
         "source": "C:\\Users\\knmy0\\android_open_src\\SagoBangjiSystem\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png"
     },
     {
+        "merged": "C:\\Users\\knmy0\\android_open_src\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\raw_alert.wav.flat",
+        "source": "C:\\Users\\knmy0\\android_open_src\\SagoBangjiSystem\\app\\src\\main\\res\\raw\\alert.wav"
+    },
+    {
         "merged": "C:\\Users\\knmy0\\android_open_src\\SagoBangjiSystem\\app\\build\\intermediates\\res\\merged\\debug\\drawable_marker.png.flat",
         "source": "C:\\Users\\knmy0\\android_open_src\\SagoBangjiSystem\\app\\src\\main\\res\\drawable\\marker.png"
     },

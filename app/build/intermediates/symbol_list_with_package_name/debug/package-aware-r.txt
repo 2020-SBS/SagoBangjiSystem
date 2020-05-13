@@ -1338,7 +1338,6 @@ id actions
 id activity_chooser_view_content
 id activity_kakao_navi_web_view
 id add
-id address
 id adjust_height
 id adjust_width
 id alertTitle
@@ -1450,7 +1449,6 @@ id listMode
 id list_item
 id locationServiceStatus
 id loginBtn
-id logoutBtn
 id logout_item
 id main_layout
 id map_view
@@ -1531,6 +1529,7 @@ id snap
 id snapMargins
 id sound_alert_item
 id spacer
+id speedTextView
 id split_action_bar
 id spread
 id spread_inside
@@ -1580,9 +1579,6 @@ id unknown
 id unlabeled
 id up
 id useLogo
-id userAccount
-id userImage
-id userName
 id vibration_alert_item
 id view_offset_helper
 id visible
@@ -1707,6 +1703,7 @@ layout support_simple_spinner_dropdown_item
 menu main_navigation_menu
 mipmap ic_launcher
 mipmap ic_launcher_round
+raw alert
 string abc_action_bar_home_description
 string abc_action_bar_up_description
 string abc_action_menu_overflow_description
