@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\knmy0\\android_open_src\\test\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-et\\values-et.xml",
+            "outputFile": "C:\\Users\\knmy0\\android_open_src\\SagoBangjiSystem\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-et\\values-et.xml",
             "map": [
                 {
                     "source": "C:\\Users\\knmy0\\.gradle\\caches\\transforms-2\\files-2.1\\75e7c473eccef2b3a0eec97fa3a7825b\\jetified-play-services-base-17.1.0\\res\\values-et\\values.xml",

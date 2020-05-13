@@ -23,33 +23,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="end|bottom"
-            android:layout_margin="5dp">
-            <Button
-                android:text="로그아웃"
-                android:fontFamily="@font/basic_font"
-                android:id="@+id/logoutBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
 
         <FrameLayout
             android:layout_marginTop="5dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
-            <TextView
-                android:id="@+id/address"
-                android:text="주소"
-                android:fontFamily="@font/basic_font"
-                android:textSize="12dp"
-                android:layout_gravity="center|top"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
             <TextView
                 android:id="@+id/locationServiceStatus"
                 android:textSize="8dp"
@@ -58,13 +37,22 @@
                 android:layout_height="wrap_content" />
             <ImageView
                 android:src="@drawable/ic_settings_black_24dp"
+                android:layout_marginEnd="5dp"
                 android:layout_gravity="right|center_vertical"
                 android:fontFamily="@font/basic_font"
                 android:id="@+id/settingBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_width="36dp"
+                android:layout_height="36dp" />
         </FrameLayout>
 
+        <TextView
+            android:layout_gravity="bottom|right"
+            android:id="@+id/speedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="속력"
+            android:fontFamily="@font/basic_font"
+            />
 
     </FrameLayout>
 

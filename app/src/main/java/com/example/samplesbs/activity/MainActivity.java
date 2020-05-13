@@ -1,6 +1,7 @@
 package com.example.samplesbs.activity;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
@@ -50,10 +51,11 @@ import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, SensorEventListener {
     public static Context context;
-    private TextView addressTextView;
     private TextView locationServiceStatus;
-    private Button logoutBtn;
+    private NavigationView navigationView;
+    private DrawerLayout drawer;
     private ImageView settingBtn;
+    private TextView speed;
     public static final int PERMISSION_CODE = 1000;
     private String[] permissions = {
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -104,12 +106,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.logoutBtn:
-                    FirebaseAuth.getInstance().signOut();
-                    startActivity(LoginActivity.class);
-                    break;
                 case R.id.settingBtn:
-                    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout) ;
                     if (!drawer.isDrawerOpen(Gravity.LEFT)) {
                         drawer.openDrawer(Gravity.LEFT) ;
                     }else{
@@ -235,9 +232,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     }
 
-    private void onFinishReverseGeoCoding(String result) {
-        addressTextView.setText(result);
-    }
+
 
 
     private void init() {
@@ -245,10 +240,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         latestLocation = new Location("latestLocation");
 
         mapView = findViewById(R.id.map_view);
-        addressTextView = findViewById(R.id.address);
-        logoutBtn = findViewById(R.id.logoutBtn);
         settingBtn = findViewById(R.id.settingBtn);
+        speed = findViewById(R.id.speedTextView);
         locationServiceStatus = findViewById(R.id.locationServiceStatus);
+
+        navigationView = findViewById(R.id.navigationView);
+        drawer = findViewById(R.id.drawerLayout);
 
         mapView.setZoomLevel(2, true);
         mapView.zoomIn(true);
@@ -256,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.setHDMapTileEnabled(false); //고해상도 지도 사용 안함
         mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
         mapView.setCurrentLocationEventListener(this);
-        logoutBtn.setOnClickListener(onClickListener);
+        navigationView.setNavigationItemSelectedListener(itemSelectedListener);
         settingBtn.setOnClickListener(onClickListener);
     }
 
@@ -267,6 +264,29 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         startActivity(intent);
         finish();
     }
+
+    NavigationView.OnNavigationItemSelectedListener itemSelectedListener = new NavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+            menuItem.setChecked(true);
+            drawer.closeDrawer(Gravity.LEFT);
+
+            switch (menuItem.getItemId()){
+                case R.id.sound_alert_item:
+                    Toast.makeText(getApplicationContext(),"sound",Toast.LENGTH_LONG).show();
+                    break;
+                case R.id.vibration_alert_item:
+                    Toast.makeText(getApplicationContext(),"vibration",Toast.LENGTH_LONG).show();
+                    break;
+                case R.id.logout_item:
+                    FirebaseAuth.getInstance().signOut();
+                    startActivity(LoginActivity.class);
+                    break;
+            }
+
+            return true;
+        }
+    };
 
     public void setLocationServiceStatus(String text) {
         locationServiceStatus.setText(text);
@@ -322,11 +342,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String s) {
         mapReverseGeoCoder.toString();
-        onFinishReverseGeoCoding(s);
+        //onFinishReverseGeoCoding(s);
     }
 
     @Override
     public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder) {
-        onFinishReverseGeoCoding("Fail");
+        //onFinishReverseGeoCoding("Fail");
     }
 }

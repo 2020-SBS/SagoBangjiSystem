@@ -1218,6 +1218,7 @@ drawable design_password_eye
 drawable design_snackbar_background
 drawable googleg_disabled_color_18
 drawable googleg_standard_color_18
+drawable ic_exit_to_app_black_24dp
 drawable ic_launcher_background
 drawable ic_launcher_foreground
 drawable ic_mtrl_chip_checked_black
@@ -1450,6 +1451,7 @@ id list_item
 id locationServiceStatus
 id loginBtn
 id logoutBtn
+id logout_item
 id main_layout
 id map_view
 id masked
@@ -1527,7 +1529,7 @@ id snackbar_action
 id snackbar_text
 id snap
 id snapMargins
-id sound_alert
+id sound_alert_item
 id spacer
 id split_action_bar
 id spread
@@ -1581,7 +1583,7 @@ id useLogo
 id userAccount
 id userImage
 id userName
-id vibration_alert
+id vibration_alert_item
 id view_offset_helper
 id visible
 id wide

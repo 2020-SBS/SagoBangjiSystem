@@ -2,14 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
         <item
-            android:id ="@+id/sound_alert"
+            android:id ="@+id/sound_alert_item"
             android:icon="@drawable/ic_notifications"
             android:title="소리 알림"
             />
         <item
-            android:id ="@+id/vibration_alert"
+            android:id ="@+id/vibration_alert_item"
             android:icon="@drawable/ic_vibration"
             android:title="진동 알림"
+            />
+        <item
+            android:id ="@+id/logout_item"
+            android:icon="@drawable/ic_exit_to_app_black_24dp"
+            android:title="로그 아웃"
             />
     </group>
 </menu>
