@@ -82,6 +82,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     float distance;
     long time;
 
+    //조민서
+    private InsertLocationData insertLocationData;
+    private long backKeyPressedTime;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     @Override
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
         MapPoint.GeoCoordinate mapPointGeo = mapPoint.getMapPointGeoCoord();
-        InsertLocationData insertLocationData = new InsertLocationData(this);
+        insertLocationData = new InsertLocationData(this);
         if (isFirst) { //첫 업데이트
             start = System.currentTimeMillis();
             latestLocation.setLatitude(mapPointGeo.latitude);
@@ -274,6 +278,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             menuItem.setChecked(true);
             drawer.closeDrawer(Gravity.LEFT);
 
+
             switch (menuItem.getItemId()){
                 case R.id.sound_alert_item:
                     Toast.makeText(getApplicationContext(),"sound",Toast.LENGTH_LONG).show();
@@ -282,7 +287,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     Toast.makeText(getApplicationContext(),"vibration",Toast.LENGTH_LONG).show();
                     break;
                 case R.id.logout_item:
+                    //로그 아웃되면 위도를 0.0으로 갱신하고 로그 아웃
+
+                    latestLocation.setLatitude(0.0);
+                    latestLocation.setLongitude(0.0);
+                    queue.add(new LocationData(0.0,0.0));
+                    insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
                     FirebaseAuth.getInstance().signOut();
+                    // 로그아웃 한 경우도 앱종료했던것처럼 하면 문제가 생기려나...? 일단 보류- 0518 조민서 이따 팀원들이랑 얘기 나눠보자.
                     startActivity(LoginActivity.class);
                     break;
             }
@@ -351,5 +363,29 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     @Override
     public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder) {
         //onFinishReverseGeoCoding("Fail");
+    }
+    //조민서05-18
+    @Override
+    public void onBackPressed(){
+        if(System.currentTimeMillis()>backKeyPressedTime+2000){
+            backKeyPressedTime = System.currentTimeMillis();
+            Toast.makeText(getApplicationContext(),"뒤로 버튼을 한번 더 누르면 종료합니다.",Toast.LENGTH_SHORT).show();
+        }
+        //2번째 백버튼 클릭 (종료)
+        else{
+            AppFinish();
+        }
+    }
+    public void AppFinish(){
+        //어플이 종료시 위치를 null 혹은 없는걸로 표시하여 알림이 수신되지 않게 한다.
+        // null은 안됨! 0.0//0.0 -> 바다 한가운데!!
+        insertLocationData = new InsertLocationData(this);
+        latestLocation.setLatitude(0.0);
+        latestLocation.setLongitude(0.0);
+        queue.add(new LocationData(0.0,0.0));
+        insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
+        finish();
+        System.exit(0);
+        //android.os.Process.killProcess(android.os.Process.myPid());
     }
 }
