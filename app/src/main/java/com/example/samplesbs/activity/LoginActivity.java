@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.ContentLoadingProgressBar;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -45,6 +47,8 @@ import com.google.firebase.iid.InstanceIdResult;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -119,6 +123,12 @@ public class LoginActivity extends AppCompatActivity {
         String email = ((EditText) findViewById(R.id.emailEditText)).getText().toString();
         String password = ((EditText) findViewById(R.id.pwEditText)).getText().toString();
         if (email.length() > 0 && password.length() > 0) {
+
+            //검증을 위해 아래 코드를 실행함
+            if(!loginValCheck(email,password)){
+                return ;
+            }
+
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -258,6 +268,34 @@ public class LoginActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+    }
+
+
+    private boolean loginValCheck(final String email, final String password){
+        //키보드 내리기
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+        /*for preventing SQL injection, some special characters are restricted.*/
+        String pwRestricted = "(?=.*[@#$%*=,.;])";
+        Matcher Rmatcher = Pattern.compile(pwRestricted).matcher(password);
+
+        if(Rmatcher.find()) {
+            Toast.makeText(getApplicationContext(), "비밀번호에 다음과 같은 특수문자를 사용할 수 없습니다. \"@#$%*=,.;\"", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(password.contains(email)) {
+            Toast.makeText(getApplicationContext(), "비밀번호가 이메일 중 일부를 포함할 수 없습니다.",Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if(password.contains(" ")) {
+            Toast.makeText(getApplicationContext(), "비밀번호는 공백을 포함할 수 없습니다.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
 }
