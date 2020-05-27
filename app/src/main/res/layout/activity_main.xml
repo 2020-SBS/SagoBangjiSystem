@@ -52,7 +52,6 @@
             android:layout_height="40dp"
             android:layout_gravity="bottom|right"
             android:layout_marginRight="16dp"
-            android:layout_toTopOf="%@id/temp"
             android:background="@color/white"
             android:fontFamily="@font/basic_font"
             android:text="속력"
