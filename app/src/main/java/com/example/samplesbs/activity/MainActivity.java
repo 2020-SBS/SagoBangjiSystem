@@ -2,6 +2,7 @@ package com.example.samplesbs.activity;
 
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -26,7 +27,9 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +41,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import com.muddzdev.styleabletoast.StyleableToast;
+
 
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
@@ -87,9 +91,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     float distance;
     long time;
 
+    private int  CurrentVolume;
+
     //조민서
     private InsertLocationData insertLocationData;
     private long backKeyPressedTime;
+    private ActionBarDrawerToggle mToggle;
+    private int sound_check=0;
 
 
     @Override
@@ -155,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             end = System.currentTimeMillis();
             time = (end - start) / 1000;
             start = end;
-            speedTextView.setText("속도:" + (distance / time) + "(m/s)");
+            speedTextView.setText("속도:" + (distance / time) * 3.6 + "(km/h)");
 
             prevLocation.setLatitude(latestLocation.getLatitude());
             prevLocation.setLongitude(latestLocation.getLongitude());
@@ -261,10 +269,22 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     }
                 }, 0);
                 mapView.addPOIItem(customMarker);
-                //MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.alert);
-                //audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
-                //        (int)audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
-                //mediaPlayer.start();
+
+                if(sound_check==1 ) {// 소리알림이 켜져 있으면,
+                        MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.alert);
+                        CurrentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                        audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
+                                (int) audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
+                        mediaPlayer.start();
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                            }
+                        }, 4000);
+
+                        audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
+                                CurrentVolume, AudioManager.FLAG_PLAY_SOUND);
+                    }
                 break;
             }else{
                 Log.e("currentBearing", currentBearing+"");
@@ -306,6 +326,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         navigationView.setNavigationItemSelectedListener(itemSelectedListener);
         settingBtn.setOnClickListener(onClickListener);
         accidentBtn.setOnClickListener(onClickListener);
+
+
     }
 
 
@@ -319,33 +341,76 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     NavigationView.OnNavigationItemSelectedListener itemSelectedListener = new NavigationView.OnNavigationItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-            menuItem.setChecked(true);
-            drawer.closeDrawer(Gravity.LEFT);
-
-
-            switch (menuItem.getItemId()){
-                case R.id.sound_alert_item:
-                    Toast.makeText(getApplicationContext(),"sound",Toast.LENGTH_LONG).show();
-                    break;
-                case R.id.vibration_alert_item:
-                    Toast.makeText(getApplicationContext(),"vibration",Toast.LENGTH_LONG).show();
-                    break;
-                case R.id.logout_item:
-                    //로그 아웃되면 위도를 0.0으로 갱신하고 로그 아웃
-
-                    latestLocation.setLatitude(0.0);
-                    latestLocation.setLongitude(0.0);
-                    queue.add(new LocationData(0.0,0.0));
-                    insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
-                    FirebaseAuth.getInstance().signOut();
-                    // 로그아웃 한 경우도 앱종료했던것처럼 하면 문제가 생기려나...? 일단 보류- 0518 조민서 이따 팀원들이랑 얘기 나눠보자.
-                    startActivity(LoginActivity.class);
-                    break;
-            }
-
+            //menuItem.setChecked(true);
+            //
+            switchScreen(menuItem,menuItem.getItemId());
             return true;
         }
     };
+
+    private void switchScreen(MenuItem menuItem, int id){
+
+        switch (id){
+            case R.id.sound_alert_item:
+                menuItem = navigationView.getMenu().findItem(R.id.sound_alert_item);
+                final Switch sound_switch = (Switch) menuItem.getActionView().findViewById(R.id.drawer_sound);
+                sound_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if(isChecked) {
+                            Toast.makeText(getApplicationContext(), "sound on", Toast.LENGTH_SHORT).show();
+                            sound_check =1;
+
+                        }
+                        else {
+                            Toast.makeText(getApplicationContext(), "sound off", Toast.LENGTH_SHORT).show();
+                            sound_check=0;
+                        }
+                    }
+                });
+
+                break;
+            case R.id.vibration_alert_item:
+                menuItem = navigationView.getMenu().findItem(R.id.vibration_alert_item);
+                Switch vibrate_switch = (Switch) menuItem.getActionView().findViewById(R.id.drawer_vi);
+                vibrate_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if(isChecked) {
+                            Toast.makeText(getApplicationContext(), "vibration on", Toast.LENGTH_SHORT).show();
+
+                        }
+                        else {
+                            Toast.makeText(getApplicationContext(), "vibration off", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                break;
+
+            case R.id.logout_item:
+                //로그 아웃되면 위도를 0.0으로 갱신하고 로그 아
+                FirebaseAuth.getInstance().signOut();
+                // 로그아웃 한 경우도 앱종료했던것처럼 하면 문제가 생기려나...? 일단 보류- 0518 조민서 이따 팀원들이랑 얘기 나눠보자.
+                startActivity(LoginActivity.class);
+                latestLocation.setLatitude(0.0);
+                latestLocation.setLongitude(0.0);
+                queue.add(new LocationData(0.0,0.0));
+                insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
+
+
+                break;
+        }
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        navigationView.setCheckedItem(R.id.sound_alert_item);
+        navigationView.getMenu().performIdentifierAction(R.id.sound_alert_item, 0);
+        if (mToggle.onOptionsItemSelected(item)) {
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
 
     public void setLocationServiceStatus(String text) {
         locationServiceStatus.setText(text);
@@ -531,8 +596,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/logout.php", String.valueOf(0.0), String.valueOf(0.0), token);
             Log.d("token:", token);
         }
-        //finish();
-        //System.exit(0);
+        finish();
+        System.exit(0);
         //android.os.Process.killProcess(android.os.Process.myPid());
     }
 

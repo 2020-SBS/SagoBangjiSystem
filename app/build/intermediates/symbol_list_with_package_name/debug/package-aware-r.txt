@@ -1405,6 +1405,8 @@ id direct
 id disableHome
 id display_always
 id drawerLayout
+id drawer_sound
+id drawer_vi
 id edit_query
 id emailEditText
 id end
@@ -1674,6 +1676,8 @@ layout design_navigation_item_subheader
 layout design_navigation_menu
 layout design_navigation_menu_item
 layout design_text_input_password_icon
+layout layout_switch
+layout layout_switch_2
 layout main_navi_header
 layout messenger_button_send_blue_large
 layout messenger_button_send_blue_round
@@ -2083,6 +2087,7 @@ style RtlOverlay_Widget_AppCompat_Search_DropDown_Text
 style RtlOverlay_Widget_AppCompat_SearchView_MagIcon
 style RtlUnderlay_Widget_AppCompat_ActionButton
 style RtlUnderlay_Widget_AppCompat_ActionButton_Overflow
+style SwitchTheme
 style TextAppearance_AppCompat
 style TextAppearance_AppCompat_Body1
 style TextAppearance_AppCompat_Body2

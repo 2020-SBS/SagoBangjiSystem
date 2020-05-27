@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <group android:checkableBehavior="single">
         <item
             android:id ="@+id/sound_alert_item"
             android:icon="@drawable/ic_notifications"
+            app:actionLayout="@layout/layout_switch"
             android:title="소리 알림"
             />
         <item
             android:id ="@+id/vibration_alert_item"
             android:icon="@drawable/ic_vibration"
+            app:actionLayout="@layout/layout_switch_2"
             android:title="진동 알림"
             />
         <item

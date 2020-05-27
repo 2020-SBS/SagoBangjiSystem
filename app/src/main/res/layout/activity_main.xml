@@ -45,16 +45,22 @@
                 android:layout_height="36dp" />
         </FrameLayout>
 
+
         <TextView
-            android:layout_gravity="bottom|right"
             android:id="@+id/speedTextView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom|right"
             android:layout_marginRight="16dp"
+            android:layout_toTopOf="%@id/temp"
+            android:background="@color/white"
+            android:fontFamily="@font/basic_font"
             android:text="속력"
             android:textSize="16dp"
-            android:fontFamily="@font/basic_font"
-            />
+            android:textStyle="bold" />
+
+
+
         <TextView
             android:layout_gravity="top|center"
             android:id="@+id/bearingTextView"
