@@ -515,13 +515,29 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     public void AppFinish(){
         //어플이 종료시 위치를 null 혹은 없는걸로 표시하여 알림이 수신되지 않게 한다.
         // null은 안됨! 0.0//0.0 -> 바다 한가운데!!
-        insertLocationData = new InsertLocationData(this);
-        latestLocation.setLatitude(0.0);
-        latestLocation.setLongitude(0.0);
-        queue.add(new LocationData(0.0,0.0));
-        insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
-        finish();
-        System.exit(0);
+        InsertLocationData insertLocationData = new InsertLocationData(this);
+
+        if (token != null) {
+            insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/logout.php", String.valueOf(0.0), String.valueOf(0.0), token);
+            Log.d("token:", token);
+        }
+        //finish();
+        //System.exit(0);
         //android.os.Process.killProcess(android.os.Process.myPid());
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("stop:", "stop");
+        AppFinish();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("pause:", "pause");
+        AppFinish();
+    }
+
 }
