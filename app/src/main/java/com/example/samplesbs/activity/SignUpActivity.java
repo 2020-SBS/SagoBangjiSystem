@@ -116,7 +116,7 @@ public class SignUpActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
-        String pwPattern = "^(?=.*\\d)(?=.*[~`!@#$%\\^&*()-])(?=.*[a-z]).{9,15}$";
+        String pwPattern = "^(?=.*\\d)(?=.*[~!/\\^&*()])(?=.*[a-z]).{9,15}$";
         Matcher matcher = Pattern.compile(pwPattern).matcher(password);
 
         pwPattern = "(.)\\1\\1\\1";
@@ -124,15 +124,24 @@ public class SignUpActivity extends AppCompatActivity {
 
 
         if(!matcher.matches()) {
-            Toast.makeText(getApplicationContext(), "영문, 숫자, 특수문자를 조합하여 비밀번호를 생성해야 합니다.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "영문, 숫자, 특수문자( ~!/^&*() )를 조합하여 비밀번호를 생성해야 합니다.", Toast.LENGTH_SHORT).show();
             return false;
         }
         if(matcher2.find()) {
             Toast.makeText(getApplicationContext(), "비밀번호에 같은 문자를 네개 이상 사용할 수 없습니다.", Toast.LENGTH_SHORT).show();
             return false;
         }
+
+        /*for preventing SQL injection, some special characters are restricted.*/
+        String pwRestricted = "(?=.*[@#$%*=,.;'`])";
+        Matcher Rmatcher = Pattern.compile(pwRestricted).matcher(password);
+        if(Rmatcher.find()) {
+            Toast.makeText(getApplicationContext(), "비밀번호에 다음과 같은 특수문자를 사용할 수 없습니다. \"@#$%*=,.;'`\"", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
         if(password.contains(email)) {
-            Toast.makeText(getApplicationContext(), "비밀번호가 이메일 중 일부를 포함할 수 없습니다.",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "비밀번호가 이메일 중 일부를 포함할 수 없습니다.", Toast.LENGTH_SHORT).show();
             return false;
         }
         if(password.contains(" ")) {
