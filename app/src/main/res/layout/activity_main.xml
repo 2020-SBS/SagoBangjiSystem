@@ -50,8 +50,29 @@
             android:id="@+id/speedTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="16dp"
             android:text="속력"
             android:textSize="16dp"
+            android:fontFamily="@font/basic_font"
+            />
+        <TextView
+            android:layout_gravity="top|center"
+            android:id="@+id/bearingTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="각도"
+            android:textSize="20dp"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/basic_font"
+            />
+        <Button
+            android:layout_gravity="top|left"
+            android:id="@+id/accidentBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="사고발생"
+            android:textSize="20dp"
+            android:layout_marginTop="5dp"
             android:fontFamily="@font/basic_font"
             />
 

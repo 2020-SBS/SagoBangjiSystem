@@ -1151,6 +1151,7 @@ drawable abc_textfield_search_activated_mtrl_alpha
 drawable abc_textfield_search_default_mtrl_alpha
 drawable abc_textfield_search_material
 drawable abc_vector_test
+drawable accident_spot
 drawable avd_hide_password
 drawable avd_show_password
 drawable btn_checkbox_checked_mtrl
@@ -1316,6 +1317,7 @@ id accessibility_custom_action_6
 id accessibility_custom_action_7
 id accessibility_custom_action_8
 id accessibility_custom_action_9
+id accidentBtn
 id action0
 id action_bar
 id action_bar_activity_content
@@ -1348,6 +1350,7 @@ id auto
 id automatic
 id backBtn
 id barrier
+id bearingTextView
 id beginning
 id blocking
 id bottom

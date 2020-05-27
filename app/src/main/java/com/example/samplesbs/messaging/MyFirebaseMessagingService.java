@@ -47,6 +47,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     double lat = Double.parseDouble(latitude_array[i].substring(latitude_array[i].indexOf('"')+1,latitude_array[i].lastIndexOf('"')));
                     double lon = Double.parseDouble(longitude_array[i].substring(longitude_array[i].indexOf('"')+1,longitude_array[i].lastIndexOf('"')));
                     double ang = Double.parseDouble(angle_array[i].substring(angle_array[i].indexOf('"')+1,angle_array[i].lastIndexOf('"')));
+                    Log.d("lat",lat+"");
+                    Log.d("lon",lon+"");
+                    Log.d("ang",ang+"");
                     items.add(new LocationData(lat,lon,ang));
                 }
                 ((MainActivity)MainActivity.context).showMarker(MapPoint.mapPointWithGeoCoord(latitude,longitude), items);

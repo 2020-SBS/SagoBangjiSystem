@@ -15,14 +15,17 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +51,8 @@ import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, SensorEventListener {
     public static Context context;
+    private Button accidentBtn;
+    private TextView bearingTextView;
     private TextView locationServiceStatus;
     private NavigationView navigationView;
     private DrawerLayout drawer;
@@ -60,16 +65,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     };
     private MapView mapView;
     private Boolean isFirst = true;
-
+    private AudioManager audioManager;
     private static String EXTERNAL_IP_ADDRESS = "133.186.212.78";
 
     private String userID = null;
     private String token = null;
 
     private Queue<LocationData> queue = new LinkedList<LocationData>();
+    private Queue<LocationData> testQueue = new LinkedList<LocationData>();
     private Location prevLocation, latestLocation;
     private float currentBearing;
-    private float minBearing=360f, maxBearing=0f;
     private double accidentLatitude = 0.0;
     private double accidentLongitude = 0.0;
 
@@ -113,7 +118,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     }else{
                         drawer.closeDrawer(Gravity.LEFT); ;
                     }
-
+                    break;
+                case R.id.accidentBtn:
+                    NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
+                    notifyAccident.setQueue(testQueue);
+                    notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(37.320469), String.valueOf(127.115286), "accident", token);
             }
         }
     };
@@ -122,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
         MapPoint.GeoCoordinate mapPointGeo = mapPoint.getMapPointGeoCoord();
         InsertLocationData insertLocationData = new InsertLocationData(this);
+
         if (isFirst) { //첫 업데이트
             start = System.currentTimeMillis();
             latestLocation.setLatitude(mapPointGeo.latitude);
@@ -143,19 +153,23 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             latestLocation.setLongitude(mapPointGeo.longitude);
 
             currentBearing = prevLocation.bearingTo(latestLocation);
-            if(currentBearing<=minBearing)
-                minBearing=currentBearing;
-            if(currentBearing>=maxBearing)
-                maxBearing=currentBearing;
+            if(currentBearing<0){
+                currentBearing +=360;
+            }
+
+            if(bearingTextView!=null)
+                bearingTextView.setText(currentBearing+"");
+
+
 
             if (token != null && (prevLocation.getLongitude() != latestLocation.getLongitude() || prevLocation.getLatitude() != latestLocation.getLatitude())) //위도 경도가 하나라도 달라야됨
                 insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
 
             if(queue.size()<10)
-                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude,prevLocation.bearingTo(latestLocation)));
+                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude,currentBearing));
             else{
                 queue.poll();
-                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude,prevLocation.bearingTo(latestLocation)));
+                queue.add(new LocationData(mapPointGeo.latitude,mapPointGeo.longitude,currentBearing));
             }
         }
 
@@ -182,11 +196,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         double total = Math.sqrt(Math.pow(accX, 2) + Math.pow(accY, 2) + Math.pow(accZ, 2));
 
 
-        if(total > 3.0 * 9.8 && token!=null && (accidentLongitude!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
+        if(total > 1.0 * 9.8 && token!=null && (accidentLongitude!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
             Log.d("accident","occur");
             accidentLatitude = latestLocation.getLatitude();
             accidentLongitude = latestLocation.getLongitude();
             NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
+
             notifyAccident.setQueue(queue);
             notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(accidentLatitude), String.valueOf(accidentLongitude), "accident", token);
         }
@@ -198,6 +213,17 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
     public void showMarker(MapPoint mapPoint,ArrayList<LocationData> items) {
+        double minBearing=360.0, maxBearing=0.0;
+
+        // 같은 장소에서 테스트 시 아래 max,min 구하는 코드를 적용시 문제 있을 수 있음: 같은 장소 테스트시에는 가급적 주석처리.
+        for(int i=0; i<items.size(); i++){
+            if(minBearing > items.get(i).getAngle() && items.get(i).getAngle()!=0.0)
+                minBearing=items.get(i).getAngle();
+            if(maxBearing < items.get(i).getAngle() && items.get(i).getAngle()!=0.0)
+                maxBearing=items.get(i).getAngle();
+        }
+        // End Of Max, Min Algorithm
+
         for(int i=0; i<items.size(); i++){
             Location subCircle = new Location(String.valueOf(i));
             subCircle.setLongitude(items.get(i).getLongitude());
@@ -209,9 +235,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 customMarker.setTag(1);
                 customMarker.setMapPoint(mapPoint);
                 customMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
-                customMarker.setCustomImageResourceId(R.drawable.marker); // 마커 이미지.
+                customMarker.setCustomImageResourceId(R.drawable.accident_spot); // 마커 이미지.
                 customMarker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
-                customMarker.setCustomImageAnchor(0.5f, 1.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                customMarker.setCustomImageAnchor(0.0f, 0.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                 Handler mHandler = new Handler(Looper.getMainLooper());
                 mHandler.postDelayed(new Runnable() {
                     @Override
@@ -220,10 +246,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     }
                 }, 0);
                 mapView.addPOIItem(customMarker);
-                //void fitMapViewAreaToShowMapPoints(MapPoint[]) 지정한 지도 좌표들이 모두 화면에 나타나도록 지도화면 중심과 확대/축소 레벨을 자동조절한다.
-                //AlertPlayer.initSounds(getApplicationContext());
-                //AlertPlayer.play(AlertPlayer.ALERT);
                 MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.alert);
+                audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
+                        (int)audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
                 mediaPlayer.start();
                 break;
             }else{
@@ -244,12 +269,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mapView = findViewById(R.id.map_view);
         settingBtn = findViewById(R.id.settingBtn);
+        accidentBtn = findViewById(R.id.accidentBtn);
         speedTextView = findViewById(R.id.speedTextView);
+        bearingTextView = findViewById(R.id.bearingTextView);
         locationServiceStatus = findViewById(R.id.locationServiceStatus);
+
+
 
         navigationView = findViewById(R.id.navigationView);
         drawer = findViewById(R.id.drawerLayout);
 
+        audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        setting();
         mapView.setZoomLevel(2, true);
         mapView.zoomIn(true);
         mapView.zoomOut(true);
@@ -258,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.setCurrentLocationEventListener(this);
         navigationView.setNavigationItemSelectedListener(itemSelectedListener);
         settingBtn.setOnClickListener(onClickListener);
+        accidentBtn.setOnClickListener(onClickListener);
     }
 
 
@@ -351,5 +383,108 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     @Override
     public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder) {
         //onFinishReverseGeoCoding("Fail");
+    }
+
+    private void setting(){
+        LocationData t1= new LocationData(37.325582,127.109091);
+        LocationData t2= new LocationData(37.324179,127.109043);
+        LocationData t3= new LocationData(37.322769,127.108670);
+        LocationData t4= new LocationData(37.321975,127.108594);
+        LocationData t5= new LocationData(37.321059,127.108552);//보정동 좌회전해서 돌아가는쪽
+        LocationData t6= new LocationData(37.320473,127.108858);
+        LocationData t7= new LocationData(37.320458,127.110349);
+        LocationData t8= new LocationData(37.320481,127.112590);
+        LocationData t9= new LocationData(37.320485,127.113904);
+        LocationData t10= new LocationData(37.320469,127.115286);
+        t1.setAngle(0.0); //default value
+        t2.setAngle(181.56506);
+        t3.setAngle(191.92928);
+        t4.setAngle(184.37137);
+        t5.setAngle(182.09717);
+        t6.setAngle(157.36186);
+        t7.setAngle(90.72125);
+        t8.setAngle(89.26306);
+        t9.setAngle(89.78121);
+        t10.setAngle(90.8301);
+
+
+        testQueue.add(t1);testQueue.add(t2);testQueue.add(t3);testQueue.add(t4);testQueue.add(t5);
+        testQueue.add(t6);testQueue.add(t7);testQueue.add(t8);testQueue.add(t9);testQueue.add(t10);
+
+
+
+
+        Location test1 = new Location("test1");
+        Location test2 = new Location("test2");
+        Location test3 = new Location("test3");
+        Location test4 = new Location("test4");
+        Location test5 = new Location("test5");
+        Location test6 = new Location("test6");
+        Location test7 = new Location("test7");
+        Location test8 = new Location("test8");
+        Location test9 = new Location("test9");
+        Location test10 = new Location("test10");
+        test1.setLatitude(37.325582);test1.setLongitude(127.109091);
+        test2.setLatitude(37.324179);test2.setLongitude(127.109043);
+        test3.setLatitude(37.322769);test3.setLongitude(127.108670);
+        test4.setLatitude(37.321975);test4.setLongitude(127.108594);
+        test5.setLatitude(37.321059);test5.setLongitude(127.108552); //회전
+        test6.setLatitude(37.320473);test6.setLongitude(127.108858);
+
+        test7.setLatitude(37.320458);test7.setLongitude(127.110349);
+        test8.setLatitude(37.320481);test8.setLongitude(127.112590);
+        test9.setLatitude(37.320485);test9.setLongitude(127.113904);
+        test10.setLatitude(37.320469);test10.setLongitude(127.115286);
+
+
+
+
+        float bearing1= test1.bearingTo(test2);
+        if(bearing1<0){
+            bearing1 +=360;
+        }
+        float bearing2= test2.bearingTo(test3);
+        if(bearing2<0){
+            bearing2 +=360;
+        }
+        float bearing3= test3.bearingTo(test4);
+        if(bearing3<0){
+            bearing3 +=360;
+        }
+        float bearing4= test4.bearingTo(test5);
+        if(bearing4<0){
+            bearing4 +=360;
+        }
+        float bearing5= test5.bearingTo(test6);
+        if(bearing5<0){
+            bearing5 +=360;
+        }
+        float bearing6= test6.bearingTo(test7);
+        if(bearing6<0){
+            bearing6 +=360;
+        }
+        float bearing7= test7.bearingTo(test8);
+        if(bearing7<0){
+            bearing7 +=360;
+        }
+        float bearing8= test8.bearingTo(test9);
+        if(bearing8<0){
+            bearing8 +=360;
+        }
+        float bearing9= test9.bearingTo(test10);
+        if(bearing9<0){
+            bearing9 +=360;
+        }
+
+        Log.d("test1", bearing1+"");
+        Log.d("test2", bearing2+"");
+        Log.d("test3", bearing3+"");
+        Log.d("test4", bearing4+"");
+        Log.d("test5", bearing5+"");
+        Log.d("test6", bearing6+"");
+        Log.d("test7", bearing7+"");
+        Log.d("test8", bearing8+"");
+        Log.d("test9", bearing9+"");
+
     }
 }

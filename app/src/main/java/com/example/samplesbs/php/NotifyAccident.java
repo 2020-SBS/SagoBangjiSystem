@@ -1,31 +1,18 @@
 package com.example.samplesbs.php;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
-
 import com.example.samplesbs.data_model.LocationData;
-import com.google.gson.JsonObject;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Queue;
 
 public class NotifyAccident extends AsyncTask<String, String, String> {
@@ -167,7 +154,7 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
     }
 
     public void setQueue(Queue<LocationData> queue) {
-        this.queue = queue;
+        this.queue=queue;
     }
 
     private String setPostParameter(String parameters) {
@@ -179,4 +166,5 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
         }
         return temp;
     }
+
 }
