@@ -124,6 +124,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     }
                     break;
                 case R.id.accidentBtn:
+                    if(testQueue.size()==0){
+                        setting();
+                    }
+                    latestLocation.setLatitude(37.320441);
+                    latestLocation.setLongitude(127.115528);
+                    currentBearing=95;
                     NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
                     notifyAccident.setQueue(testQueue);
                     notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(37.320469), String.valueOf(127.115286), "accident", token);
@@ -201,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         double total = Math.sqrt(Math.pow(accX, 2) + Math.pow(accY, 2) + Math.pow(accZ, 2));
 
 
-        if(total > 1.0 * 9.8 && token!=null && (accidentLongitude!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
+        if(total > 2.0 * 9.8 && token!=null && (accidentLongitude!=latestLocation.getLongitude()||accidentLatitude!=latestLocation.getLatitude())) { //사고 위치가 바뀌고 중력가속도 기준치 이상
             Log.d("accident","occur");
             accidentLatitude = latestLocation.getLatitude();
             accidentLongitude = latestLocation.getLongitude();
@@ -233,8 +239,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             Location subCircle = new Location(String.valueOf(i));
             subCircle.setLongitude(items.get(i).getLongitude());
             subCircle.setLatitude(items.get(i).getLatitude());
+            //사고차량이 커피랑 도서관 앞을 95도 방향으로 지난다고 가정
+
+
             double distance = latestLocation.distanceTo(subCircle);
-            if(distance<135.0 &&(currentBearing>=minBearing && currentBearing<=maxBearing)){
+            if(distance<135.0 &&(currentBearing>=minBearing && currentBearing<=maxBearing) ){
+                Log.e("currentBearing","currentBearingcurrentBearingcurrentBearing");
                 MapPOIItem customMarker = new MapPOIItem();
                 customMarker.setItemName("급감속 발생 위치");
                 customMarker.setTag(1);
@@ -242,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 customMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage); // 마커타입을 커스텀 마커로 지정.
                 customMarker.setCustomImageResourceId(R.drawable.accident_spot); // 마커 이미지.
                 customMarker.setCustomImageAutoscale(false); // hdpi, xhdpi 등 안드로이드 플랫폼의 스케일을 사용할 경우 지도 라이브러리의 스케일 기능을 꺼줌.
-                customMarker.setCustomImageAnchor(0.0f, 0.0f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
+                customMarker.setCustomImageAnchor(0.5f, 0.5f); // 마커 이미지중 기준이 되는 위치(앵커포인트) 지정 - 마커 이미지 좌측 상단 기준 x(0.0f ~ 1.0f), y(0.0f ~ 1.0f) 값.
                 Handler mHandler = new Handler(Looper.getMainLooper());
                 mHandler.postDelayed(new Runnable() {
                     @Override
@@ -251,12 +261,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     }
                 }, 0);
                 mapView.addPOIItem(customMarker);
-                MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.alert);
-                audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
-                        (int)audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
-                mediaPlayer.start();
+                //MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.alert);
+                //audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
+                //        (int)audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
+                //mediaPlayer.start();
                 break;
             }else{
+                Log.e("currentBearing", currentBearing+"");
                 Log.e("latestLocation",  latestLocation.getLatitude()+","+latestLocation.getLongitude()+"");
                 Log.e("subcircle",  subCircle.getLatitude()+","+subCircle.getLongitude()+"");
                 Log.e("distance",  latestLocation.distanceTo(subCircle)+"");
@@ -450,8 +461,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         test10.setLatitude(37.320469);test10.setLongitude(127.115286);
 
 
-
-
         float bearing1= test1.bearingTo(test2);
         if(bearing1<0){
             bearing1 +=360;
@@ -500,6 +509,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         Log.d("test9", bearing9+"");
 
     }
+
     //조민서05-18
     @Override
     public void onBackPressed(){

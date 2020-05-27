@@ -159,8 +159,9 @@ public class NotifyAccident extends AsyncTask<String, String, String> {
 
     private String setPostParameter(String parameters) {
         String temp = parameters;
+        int firstQueueSize = queue.size();
         temp += "&size=" + queue.size();
-        for (int i = 0; i < queue.size(); i++) {
+        for (int i = 0; i < firstQueueSize; i++) {
             LocationData location = queue.poll();
             temp += "&latitude" + i + "=" + location.getLatitude() + "&longitude" + i + "=" + location.getLongitude() + "&angle" + i + "=" + location.getAngle();
         }
