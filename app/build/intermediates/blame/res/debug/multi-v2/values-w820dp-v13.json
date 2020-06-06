@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\new_2\\SagoBangjiSystem\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-w820dp-v13\\values-w820dp-v13.xml",
+            "outputFile": "C:\\Users\\knmy0\\android_open_src\\SagoBangjiSystem\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-w820dp-v13\\values-w820dp-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\min\\.gradle\\caches\\transforms-2\\files-2.1\\5c1962418b011656148a3dde7dcaea3e\\jetified-kakaonavi-1.27.0\\res\\values-w820dp-v13\\values-w820dp-v13.xml",
+                    "source": "C:\\Users\\knmy0\\.gradle\\caches\\transforms-2\\files-2.1\\5c1962418b011656148a3dde7dcaea3e\\jetified-kakaonavi-1.27.0\\res\\values-w820dp-v13\\values-w820dp-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

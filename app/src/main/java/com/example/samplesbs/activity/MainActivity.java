@@ -56,6 +56,7 @@ import java.util.Queue;
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener, SensorEventListener {
     public static Context context;
     private Button accidentBtn;
+    private TextView locationTextView;
     private TextView bearingTextView;
     private TextView locationServiceStatus;
     private NavigationView navigationView;
@@ -134,10 +135,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 case R.id.accidentBtn:
                     if(testQueue.size()==0){
                         setting();
-                    }
+                    }/*
                     latestLocation.setLatitude(37.320441);
                     latestLocation.setLongitude(127.115528);
-                    currentBearing=95;
+                    currentBearing=95;*/
                     NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
                     notifyAccident.setQueue(testQueue);
                     notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(37.320469), String.valueOf(127.115286), "accident", token);
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             end = System.currentTimeMillis();
             time = (end - start) / 1000;
             start = end;
-            speedTextView.setText("속도:" + (distance / time) * 3.6 + "(km/h)");
+            speedTextView.setText((distance / time) * 3.6+"");
 
             prevLocation.setLatitude(latestLocation.getLatitude());
             prevLocation.setLongitude(latestLocation.getLongitude());
@@ -176,8 +177,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 currentBearing +=360;
             }
 
-            if(bearingTextView!=null)
-                bearingTextView.setText(currentBearing+"");
+            bearingTextView.setText(currentBearing + "");
+            locationTextView.setText("(" + (Math.round(latestLocation.getLatitude() * 1000) / 1000.0) + "," + (Math.round(latestLocation.getLongitude() * 1000) / 1000.0) + ")");
+
 
 
 
@@ -307,6 +309,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         settingBtn = findViewById(R.id.settingBtn);
         accidentBtn = findViewById(R.id.accidentBtn);
         speedTextView = findViewById(R.id.speedTextView);
+        locationTextView = findViewById(R.id.locationTextView);
         bearingTextView = findViewById(R.id.bearingTextView);
         locationServiceStatus = findViewById(R.id.locationServiceStatus);
 
@@ -388,15 +391,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 break;
 
             case R.id.logout_item:
-                //로그 아웃되면 위도를 0.0으로 갱신하고 로그 아
+                //로그아웃시 토큰 제거
                 FirebaseAuth.getInstance().signOut();
-                // 로그아웃 한 경우도 앱종료했던것처럼 하면 문제가 생기려나...? 일단 보류- 0518 조민서 이따 팀원들이랑 얘기 나눠보자.
                 startActivity(LoginActivity.class);
-                latestLocation.setLatitude(0.0);
-                latestLocation.setLongitude(0.0);
-                queue.add(new LocationData(0.0,0.0));
-                insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/insert.php", String.valueOf(latestLocation.getLatitude()), String.valueOf(latestLocation.getLongitude()), token);
-
+                RemoveToken();
 
                 break;
         }
@@ -575,19 +573,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
-    //조민서05-18
-    @Override
-    public void onBackPressed(){
-        if(System.currentTimeMillis()>backKeyPressedTime+2000){
-            backKeyPressedTime = System.currentTimeMillis();
-            Toast.makeText(getApplicationContext(),"뒤로 버튼을 한번 더 누르면 종료합니다.",Toast.LENGTH_SHORT).show();
-        }
-        //2번째 백버튼 클릭 (종료)
-        else{
-            AppFinish();
-        }
-    }
-    public void AppFinish(){
+    public void RemoveToken(){
         //어플이 종료시 위치를 null 혹은 없는걸로 표시하여 알림이 수신되지 않게 한다.
         // null은 안됨! 0.0//0.0 -> 바다 한가운데!!
         InsertLocationData insertLocationData = new InsertLocationData(this);
@@ -596,23 +582,15 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             insertLocationData.execute("http://" + EXTERNAL_IP_ADDRESS + "/logout.php", String.valueOf(0.0), String.valueOf(0.0), token);
             Log.d("token:", token);
         }
-        finish();
-        System.exit(0);
         //android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d("stop:", "stop");
-        AppFinish();
-    }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d("pause:", "pause");
-        AppFinish();
+        RemoveToken();
     }
 
 }

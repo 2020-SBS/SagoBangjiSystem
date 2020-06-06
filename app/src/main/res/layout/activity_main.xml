@@ -49,27 +49,43 @@
         <TextView
             android:id="@+id/speedTextView"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_gravity="bottom|right"
-            android:layout_marginRight="16dp"
-            android:background="@color/white"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|left"
+            android:layout_marginStart="8dp"
+            android:layout_marginVertical="8dp"
             android:fontFamily="@font/basic_font"
             android:text="속력"
-            android:textSize="16dp"
+            android:textSize="32dp"
+            android:textColor="@color/black"
             android:textStyle="bold" />
 
 
-
-        <TextView
-            android:layout_gravity="top|center"
-            android:id="@+id/bearingTextView"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="각도"
-            android:textSize="20dp"
-            android:layout_marginTop="5dp"
-            android:fontFamily="@font/basic_font"
-            />
+            android:layout_gravity="top|center"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/locationTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="위치"
+                android:textSize="14dp"
+                android:layout_marginTop="5dp"
+                android:fontFamily="@font/basic_font"
+                />
+            <TextView
+                android:id="@+id/bearingTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="각도"
+                android:textSize="14dp"
+                android:layout_marginTop="5dp"
+                android:fontFamily="@font/basic_font"
+                />
+        </LinearLayout>
+
         <Button
             android:layout_gravity="top|left"
             android:id="@+id/accidentBtn"

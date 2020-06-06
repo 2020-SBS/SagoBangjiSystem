@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">SampleSBS</string>
-    <string name="kakao_app_key">1cfb4219124352ee507bc671b11a0b06</string>
+    <string name="kakao_app_key">9a2eb61c674944933b83485ccf216157</string>
     <string name="permission_failed">권한을 승인해야 앱을 사용할 수 있습니다.</string>
     <string name="login_failed">로그인에 실패했습니다.</string>
     <string name="auth_failed">인증에 실패했습니다.</string>
