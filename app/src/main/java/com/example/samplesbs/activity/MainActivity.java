@@ -11,6 +11,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,6 +22,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
@@ -35,6 +37,7 @@ import android.widget.Toast;
 
 import com.example.samplesbs.R;
 import com.example.samplesbs.data_model.LocationData;
+import com.example.samplesbs.database.AlertDBHelper;
 import com.example.samplesbs.php.InsertLocationData;
 import com.example.samplesbs.php.NotifyAccident;
 import com.google.android.material.navigation.NavigationView;
@@ -63,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private DrawerLayout drawer;
     private ImageView settingBtn;
     private TextView speedTextView;
+    private Switch sound_switch;
+    private Switch vibrate_switch;
+    private Vibrator vibrator;
     public static final int PERMISSION_CODE = 1000;
     private String[] permissions = {
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -89,16 +95,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private float[] gravity= new float[3];
 
     private long start, end;
-    float distance;
-    long time;
+    private float distance;
+    private long time;
+    private double speed;
 
     private int  CurrentVolume;
 
     //조민서
-    private InsertLocationData insertLocationData;
-    private long backKeyPressedTime;
-    private ActionBarDrawerToggle mToggle;
+
     private int sound_check=0;
+    private int vibrator_check = 0;
+
+    private SQLiteDatabase mDb;
+    private AlertDBHelper dbHelper;
 
 
     @Override
@@ -135,10 +144,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 case R.id.accidentBtn:
                     if(testQueue.size()==0){
                         setting();
-                    }/*
-                    latestLocation.setLatitude(37.320441);
-                    latestLocation.setLongitude(127.115528);
-                    currentBearing=95;*/
+                    }
                     NotifyAccident notifyAccident = new NotifyAccident(getApplicationContext());
                     notifyAccident.setQueue(testQueue);
                     notifyAccident.execute("http://" + EXTERNAL_IP_ADDRESS + "/accident.php", String.valueOf(37.320469), String.valueOf(127.115286), "accident", token);
@@ -164,7 +170,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             end = System.currentTimeMillis();
             time = (end - start) / 1000;
             start = end;
-            speedTextView.setText((distance / time) * 3.6+"");
+            speed =(distance / time) * 3.6;
+
+            if(!Double.isNaN(speed))
+                speedTextView.setText(String.valueOf(speed));
 
             prevLocation.setLatitude(latestLocation.getLatitude());
             prevLocation.setLongitude(latestLocation.getLongitude());
@@ -177,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 currentBearing +=360;
             }
 
-            bearingTextView.setText(currentBearing + "");
+            bearingTextView.setText(String.valueOf(currentBearing));
             locationTextView.setText("(" + (Math.round(latestLocation.getLatitude() * 1000) / 1000.0) + "," + (Math.round(latestLocation.getLongitude() * 1000) / 1000.0) + ")");
 
 
@@ -272,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 }, 0);
                 mapView.addPOIItem(customMarker);
 
-                if(sound_check==1 ) {// 소리알림이 켜져 있으면,
+                if(sound_check==1) {// 소리알림이 켜져 있으면,
                         MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.alert);
                         CurrentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
                         audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
@@ -286,7 +295,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
                         audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
                                 CurrentVolume, AudioManager.FLAG_PLAY_SOUND);
-                    }
+                }
+                if(vibrator_check==1){
+                    long[] pattern = {100,300,100,700,300,500}; // miliSecond
+                    //           대기,진동,대기,진동,....
+                    // 짝수 인덱스 : 대기시간
+                    // 홀수 인덱스 : 진동시간
+                    vibrator.vibrate(pattern, // 진동 패턴을 배열로
+                            -1);     // 반복 인덱스
+                    // 0 : 무한반복, -1: 반복없음,
+                }
                 break;
             }else{
                 Log.e("currentBearing", currentBearing+"");
@@ -313,10 +331,27 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         bearingTextView = findViewById(R.id.bearingTextView);
         locationServiceStatus = findViewById(R.id.locationServiceStatus);
 
+        vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+
+        dbHelper = new AlertDBHelper(context);
+        mDb = dbHelper.getWritableDatabase();
+
+        sound_check = dbHelper.getSound();
+        vibrator_check = dbHelper.getVibration();
+
 
 
         navigationView = findViewById(R.id.navigationView);
         drawer = findViewById(R.id.drawerLayout);
+
+        sound_switch=navigationView.getMenu().findItem(R.id.sound_alert_item).getActionView().findViewById(R.id.drawer_sound);
+        vibrate_switch = navigationView.getMenu().findItem(R.id.vibration_alert_item).getActionView().findViewById(R.id.drawer_vi);
+
+        if(sound_check==1)
+            sound_switch.setChecked(true);
+        if(vibrator_check==1)
+            vibrate_switch.setChecked(true);
+
 
         audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
         setting();
@@ -329,8 +364,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         navigationView.setNavigationItemSelectedListener(itemSelectedListener);
         settingBtn.setOnClickListener(onClickListener);
         accidentBtn.setOnClickListener(onClickListener);
-
-
+        sound_switch.setOnCheckedChangeListener(onCheckedChangeListener);
+        vibrate_switch.setOnCheckedChangeListener(onCheckedChangeListener);
     }
 
 
@@ -344,71 +379,48 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     NavigationView.OnNavigationItemSelectedListener itemSelectedListener = new NavigationView.OnNavigationItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-            //menuItem.setChecked(true);
-            //
-            switchScreen(menuItem,menuItem.getItemId());
-            return true;
+            switch (menuItem.getItemId()) {
+                case R.id.logout_item:
+                    //로그아웃시 토큰 제거
+                    FirebaseAuth.getInstance().signOut();
+                    startActivity(LoginActivity.class);
+                    RemoveToken();
+                    break;
+            }
+            return  true;
+        }
+    };
+    CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener(){
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            switch (buttonView.getId()){
+                case R.id.drawer_sound:
+                    if(isChecked) {
+                        Toast.makeText(getApplicationContext(), "sound on", Toast.LENGTH_SHORT).show();
+                        sound_check =1;
+                        dbHelper.updateSound(sound_check);
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "sound off", Toast.LENGTH_SHORT).show();
+                        sound_check=0;
+                        dbHelper.updateSound(sound_check);
+                    }
+                    break;
+                case R.id.drawer_vi:
+                    if(isChecked) {
+                        Toast.makeText(getApplicationContext(), "vibration on", Toast.LENGTH_SHORT).show();
+                        vibrator_check = 1;
+                        dbHelper.updateVibration(vibrator_check);
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "vibration off", Toast.LENGTH_SHORT).show();
+                        dbHelper.updateVibration(vibrator_check);
+                    }
+                    break;
+            }
         }
     };
 
-    private void switchScreen(MenuItem menuItem, int id){
-
-        switch (id){
-            case R.id.sound_alert_item:
-                menuItem = navigationView.getMenu().findItem(R.id.sound_alert_item);
-                final Switch sound_switch = (Switch) menuItem.getActionView().findViewById(R.id.drawer_sound);
-                sound_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if(isChecked) {
-                            Toast.makeText(getApplicationContext(), "sound on", Toast.LENGTH_SHORT).show();
-                            sound_check =1;
-
-                        }
-                        else {
-                            Toast.makeText(getApplicationContext(), "sound off", Toast.LENGTH_SHORT).show();
-                            sound_check=0;
-                        }
-                    }
-                });
-
-                break;
-            case R.id.vibration_alert_item:
-                menuItem = navigationView.getMenu().findItem(R.id.vibration_alert_item);
-                Switch vibrate_switch = (Switch) menuItem.getActionView().findViewById(R.id.drawer_vi);
-                vibrate_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if(isChecked) {
-                            Toast.makeText(getApplicationContext(), "vibration on", Toast.LENGTH_SHORT).show();
-
-                        }
-                        else {
-                            Toast.makeText(getApplicationContext(), "vibration off", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                break;
-
-            case R.id.logout_item:
-                //로그아웃시 토큰 제거
-                FirebaseAuth.getInstance().signOut();
-                startActivity(LoginActivity.class);
-                RemoveToken();
-
-                break;
-        }
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        navigationView.setCheckedItem(R.id.sound_alert_item);
-        navigationView.getMenu().performIdentifierAction(R.id.sound_alert_item, 0);
-        if (mToggle.onOptionsItemSelected(item)) {
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
-    }
 
     public void setLocationServiceStatus(String text) {
         locationServiceStatus.setText(text);

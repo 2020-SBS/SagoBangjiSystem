@@ -1,7 +1,6 @@
 package com.example.samplesbs.php;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -17,7 +16,6 @@ import java.net.URL;
 
 public class InsertLocationData extends AsyncTask<String, Void, String> {
     public static final String TAG ="InsertLocationData";
-    private ProgressDialog progressDialog;
     private Activity activity;
 
     public InsertLocationData(Activity activity) {
@@ -101,8 +99,6 @@ public class InsertLocationData extends AsyncTask<String, Void, String> {
     protected void onPreExecute() {
         super.onPreExecute();
 
-        progressDialog = ProgressDialog.show(activity,
-                "Please Wait", null, true, true);
     }
 
 
@@ -110,11 +106,6 @@ public class InsertLocationData extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
 
-        try {
-            progressDialog.dismiss();
-        }catch (IllegalArgumentException e){
-            Log.e(TAG, e.getMessage());
-        }
         ((MainActivity)MainActivity.context).setLocationServiceStatus(result);
         Log.d("RESULT", "POST response  - " + result);
     }
