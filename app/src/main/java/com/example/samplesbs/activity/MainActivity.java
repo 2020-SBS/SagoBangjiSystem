@@ -290,11 +290,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
+                                audioManager.setStreamVolume(audioManager.STREAM_MUSIC,CurrentVolume, AudioManager.FLAG_PLAY_SOUND);
                             }
                         }, 4000);
 
-                        audioManager.setStreamVolume(audioManager.STREAM_MUSIC,
-                                CurrentVolume, AudioManager.FLAG_PLAY_SOUND);
                 }
                 if(vibrator_check==1){
                     long[] pattern = {100,300,100,700,300,500}; // miliSecond
